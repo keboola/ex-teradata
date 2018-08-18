@@ -2,15 +2,24 @@
 
 declare(strict_types=1);
 
-namespace MyComponent;
+namespace Keboola\ExTeradata;
 
 use Keboola\Component\Config\BaseConfig;
 
 class Config extends BaseConfig
 {
-    // @todo implement your custom getters
-    public function getFoo() : string
+    public function getHost() : string
     {
-        return $this->getValue(['parameters', 'foo']);
+        return $this->getValue(['parameters', 'host']);
+    }
+
+    public function getUser() : string
+    {
+        return $this->getValue(['parameters', 'user']);
+    }
+
+    public function getPassword() : string
+    {
+        return $this->getValue(['parameters', '#password']);
     }
 }

@@ -1,19 +1,48 @@
-# my-component
+# Teradata Extractor
 
-[![Build Status](https://travis-ci.com/keboola/my-component.svg?branch=master)](https://travis-ci.com/keboola/my-component)
+[![Build Status](https://travis-ci.com/keboola/ex-teradata.svg?branch=master)](https://travis-ci.com/keboola/ex-teradata)
 
-> Fill in description
+Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 
 # Usage
 
-> fill in usage instructions
+The following parameters are required:
+
+- `host` - IP address or Hostname for Teradata server
+- `username` - User with correct access rights
+- `#password` - Password for given User
+- `database` - Database name
+
+At least one table must be must be specified.
+
+Sample configuration:
+
+```json
+{
+    "parameters": {
+        "db": {
+            "host": "100.200.30.40",
+            "username": "tduser",
+            "#password": "tdpassword",
+            "database": "tddatabase"
+        },
+        "tables": [
+            {
+                "name": "tablename",
+                "incremental": false,
+                "outputTable": "out.c-bucket.tablename"
+            }
+        ]
+    }
+}
+``` 
 
 ## Development
  
 Clone this repository and init the workspace with following command:
 
 ```
-git clone https://github.com/keboola/my-component
+git clone https://github.com/keboola/ex-teradata
 cd my-component
 docker-compose build
 docker-compose run --rm dev composer install --no-scripts

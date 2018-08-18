@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MyComponent;
+namespace Keboola\ExTeradata;
 
 use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -16,8 +16,24 @@ class ConfigDefinition extends BaseConfigDefinition
         /** @noinspection NullPointerExceptionInspection */
         $parametersNode
             ->children()
-                ->scalarNode('foo')
-                    ->defaultValue('baz')
+                ->arrayNode('db')
+                    ->isRequired()
+                    ->children()
+                        ->scalarNode('host')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('username')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('#password')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('database')->isRequired()->cannotBeEmpty()->end()
+                    ->end()
+                ->end()
+                ->arrayNode('tables')
+                    ->requiresAtLeastOneElement()
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                            ->scalarNode('outputTable')->isRequired()->cannotBeEmpty()->end()
+                            ->booleanNode('incremental')->defaultValue(false)->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
         ;

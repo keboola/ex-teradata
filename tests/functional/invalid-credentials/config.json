@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "tables": [
+      {
+        "name": "test_1",
+        "incremental": false,
+        "outputTable": "out.c-main.test-1"
+      }
+    ]
+  }
+}
