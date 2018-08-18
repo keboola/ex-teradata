@@ -29,7 +29,7 @@
         }
     },
     "scripts": {
-        "tests-phpunit": "phpunit --configuration phpunit.xml",
+        "tests-phpunit": "phpunit",
         "tests-datadir": "phpunit tests/functional",
         "tests": [
             "@tests-phpunit",

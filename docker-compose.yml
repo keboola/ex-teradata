@@ -1,8 +1,13 @@
 version: '2'
 services:
-  dev:
+  app:
     build: .
+    image: keboola/ex_teradata
     volumes:
       - ./:/code
-      - ./build/logs:/build/logs
       - ./data:/data
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile-tests
+    command: ./code-coverage.sh

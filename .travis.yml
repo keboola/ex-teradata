@@ -6,14 +6,11 @@ services:
   - docker
 
 before_script:
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
-  - export GIT_COMMIT_SHA=$TRAVIS_COMMIT
-  - export GIT_BRANCH=$TRAVIS_BRANCH
-
   - export APP_IMAGE=keboola-component
   - docker -v
+  - docker-compose build app tests
+  - docker-compose run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE -e CC_TEST_REPORTER_ID -e GIT_COMMIT_SHA=$TRAVIS_COMMIT -e GIT_BRANCH=$TRAVIS_BRANCH tests
+
   - docker build -t $APP_IMAGE .
   - docker run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE $APP_IMAGE composer ci
 
@@ -30,12 +27,6 @@ script:
   # run test job inside KBC
   # - docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job $KBC_DEVELOPERPORTAL_APP $KBC_APP_TEST_CONFIG_ID test
   - skip
-
-after_script:
-  - pwd
-  - ls -la $(pwd)
-  - ls -la $(pwd)/build/logs
-  - ./cc-test-reporter after-build -t clover --exit-code $TRAVIS_TEST_RESULT --debug
 
 deploy:
   provider: script
