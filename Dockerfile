@@ -53,4 +53,7 @@ COPY . /code/
 # run normal composer - all deps are cached already
 RUN composer install $COMPOSER_FLAGS
 
+RUN pecl install xdebug
+RUN echo "zend_extension=\"/usr/local/lib/php/extensions/no-debug-non-zts-20170718/xdebug.so\"" >> /usr/local/etc/php/php.ini
+
 CMD ["php", "/code/src/run.php"]

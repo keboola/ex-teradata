@@ -4,4 +4,5 @@ services:
     build: .
     volumes:
       - ./:/code
+      - ./build/logs:/build/logs
       - ./data:/data
