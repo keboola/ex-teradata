@@ -21,7 +21,7 @@ class ExceptionHandlerTest extends MockeryTestCase
         $this->exceptionHandler = new ExceptionHandler();
     }
 
-    public function testComponentHandlerInvalidHostThrowUserException(): void
+    public function testExceptionHandlerInvalidHostThrowUserException(): void
     {
         $exception = new DriverException(
             '[unixODBC][Teradata][WSock32 DLL] (439) WSA E HostUnreach:'
@@ -30,10 +30,10 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('The Teradata server can\'t currently be reached over this network.');
-        $this->exceptionHandler->handleComponentException($exception);
+        $this->exceptionHandler->handleException($exception);
     }
 
-    public function testComponentHandlerInvalidCredentialsThrowUserException(): void
+    public function testExceptionHandlerInvalidCredentialsThrowUserException(): void
     {
         $exception = new DriverException(
             '[unixODBC][Teradata][ODBC Teradata Driver][Teradata Database] (210)'
@@ -42,20 +42,10 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('The Username or Password is invalid.');
-        $this->exceptionHandler->handleComponentException($exception);
+        $this->exceptionHandler->handleException($exception);
     }
 
-    public function testComponentHandlerRuntimeExceptionIsPassedAbove(): void
-    {
-        $exception = new \RuntimeException('Some exception');
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Some exception');
-        $this->exceptionHandler->handleComponentException($exception);
-    }
-
-
-    public function testNonExistingDatabaseThrowUserException(): void
+    public function testExceptionHandlerNonExistingDatabaseThrowUserException(): void
     {
         $exception = new DriverException(
             '[Teradata][ODBC Teradata Driver][Teradata Database](-3802)Database'
@@ -64,14 +54,14 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Database \'invalid_database_name\' does not exist.');
-        $this->exceptionHandler->handleExtractorException(
+        $this->exceptionHandler->handleException(
             $exception,
             'invalid_database_name',
             'table_name'
         );
     }
 
-    public function testNotExistingTableThrowUserException(): void
+    public function testExceptionHandlerNotExistingTableThrowUserException(): void
     {
         $exception = new DriverException(
             '[Teradata][ODBC Teradata Driver][Teradata Database](-3807)Object'
@@ -80,20 +70,20 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Table \'invalid_table_name\' does not exist in database \'database_name\'.');
-        $this->exceptionHandler->handleExtractorException(
+        $this->exceptionHandler->handleException(
             $exception,
             'database_name',
             'invalid_table_name'
         );
     }
 
-    public function testExtractorHandlerRuntimeExceptionIsPassedAbove(): void
+    public function testExceptionHandlerRuntimeExceptionIsPassedAbove(): void
     {
         $exception = new \RuntimeException('Some exception');
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Some exception');
-        $this->exceptionHandler->handleExtractorException(
+        $this->exceptionHandler->handleException(
             $exception,
             'table_name',
             'database_name'

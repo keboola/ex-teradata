@@ -35,7 +35,7 @@ class Extractor
                 yield $row;
             }
         } catch (\Throwable $exception) {
-            $this->exceptionHandler->handleExtractorException($exception, $this->database, $tableName);
+            $this->exceptionHandler->handleException($exception, $this->database, $tableName);
         }
     }
 }

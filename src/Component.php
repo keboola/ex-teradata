@@ -57,7 +57,7 @@ class Component extends BaseComponent
                 $credentials['#password']
             );
         } catch (\Throwable $exception) {
-            $exceptionHandler->handleComponentException($exception);
+            $exceptionHandler->handleException($exception);
             exit();
         }
 
