@@ -11,6 +11,19 @@ use Keboola\Csv\CsvWriter;
 
 class Component extends BaseComponent
 {
+    /** @var array */
+    private $tableColumns = [];
+
+    private function setTableColumns(string $tableName, array $columns): void
+    {
+        $this->tableColumns[$tableName] = $columns;
+    }
+
+    private function getTableColumns(string $tableName): array
+    {
+        return $this->tableColumns[$tableName];
+    }
+
     private function createConnection(string $host, string $usename, string $password): Connection
     {
         return new Connection([
@@ -19,39 +32,6 @@ class Component extends BaseComponent
             'username' => $usename,
             'password' => $password,
         ]);
-    }
-
-    /**
-     * @param string $outputFilePath
-     * @param \Dibi\Row[] $data
-     *
-     * @throws \Keboola\Csv\Exception
-     * @throws \Keboola\Csv\InvalidArgumentException
-     */
-    private function writeDataToCsv(string $outputFilePath, array $data): void
-    {
-        $csvWriter = new CsvWriter(
-            $outputFilePath,
-            CsvWriter::DEFAULT_DELIMITER,
-            CsvWriter::DEFAULT_ENCLOSURE,
-            "\r\n"
-        );
-
-        $columns = [];
-        foreach ($data[0] as $columnName => $value) {
-            $columns[] = $columnName;
-        }
-
-        $csvWriter->writeRow($columns);
-
-        foreach ($data as $rowData) {
-            $row = [];
-            foreach ($columns as $column) {
-                $row[] = $rowData[$column];
-            }
-
-            $csvWriter->writeRow($row);
-        }
     }
 
     public function run(): void
@@ -68,6 +48,8 @@ class Component extends BaseComponent
             throw new UserException('Database credentials must be set.');
         }
 
+        $exceptionHandler = new ExceptionHandler();
+
         try {
             $connection = $this->createConnection(
                 $credentials['host'],
@@ -75,31 +57,50 @@ class Component extends BaseComponent
                 $credentials['#password']
             );
         } catch (\Throwable $exception) {
-            if (preg_match(
-                '~The Teradata server can\'t currently be reached over this network~',
-                $exception->getMessage()
-            )) {
-                throw new UserException('The Teradata server can\'t currently be reached over this network.');
-            } elseif (preg_match(
-                '~The UserId, Password or Account is invalid.~',
-                $exception->getMessage()
-            )) {
-                throw new UserException('The Username or Password is invalid.');
-            } else {
-                throw $exception;
-            }
+            $exceptionHandler->handleComponentException($exception);
+            exit();
         }
 
-        $extractor = new Extractor($connection, $credentials['database']);
+        $extractor = new Extractor($connection, $exceptionHandler, $credentials['database']);
 
         $exportedTables = [];
         foreach ($tables as $table) {
+            $tableName = $table['name'];
             $outputFilePath = $this->getDataDir() . '/out/tables/' . $table['outputTable'] . '.csv';
 
-            $data = $extractor->extractTable($table['name']);
-            $this->writeDataToCsv($outputFilePath, $data);
+            $csvWriter = new CsvWriter(
+                $outputFilePath,
+                CsvWriter::DEFAULT_DELIMITER,
+                CsvWriter::DEFAULT_ENCLOSURE,
+                "\r\n"
+            );
 
-            $exportedTables[] = $table['name'];
+            $counter = 0;
+            foreach ($extractor->extractTable($tableName) as $tableRow) {
+                if ($counter === 0) {
+                    $columns = [];
+                    foreach ($tableRow as $columnName => $value) {
+                        $columns[] = $columnName;
+                    }
+
+                    $this->setTableColumns($tableName, $columns);
+                    $csvWriter->writeRow($columns);
+                }
+
+                $row = [];
+                foreach ($this->getTableColumns($tableName) as $column) {
+                    $row[] = $tableRow[$column];
+                }
+
+                $csvWriter->writeRow($row);
+                $counter++;
+            }
+
+            if ($counter === 0) {
+                throw new \Exception('Empty export');
+            }
+
+            $exportedTables[] = $tableName;
         }
 
         $this->getLogger()->info(sprintf('Extracted tables: "%s".', implode(', ', $exportedTables)));

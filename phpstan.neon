@@ -1,6 +1,5 @@
 parameters:
     ignoreErrors:
         - '#Calling method end\(\) on possibly null value of type Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface|null.#'
-        - '#Call to an undefined method Mockery\\CompositeExpectation::once().#'
 includes:
 	- vendor/phpstan/phpstan-mockery/extension.neon
