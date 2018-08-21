@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Keboola\ExTeradata;
 
 use Dibi\Connection;
-use Keboola\Component\UserException;
+use Keboola\Csv\CsvWriter;
 
 class Extractor
 {
@@ -18,6 +18,12 @@ class Extractor
     /** @var string */
     private $database;
 
+    /** @var CsvWriter */
+    private $csvWriter;
+
+    /** @var array */
+    private $tableColumns;
+
     public function __construct(Connection $connection, ExceptionHandler $exceptionHandler, string $database)
     {
         $this->connection = $connection;
@@ -25,7 +31,69 @@ class Extractor
         $this->database = $database;
     }
 
-    public function extractTable(string $tableName): \Iterator
+    private function getCsvWriter(): CsvWriter
+    {
+        return $this->csvWriter;
+    }
+
+    private function setCsvWriter(CsvWriter $csvWriter): void
+    {
+        $this->csvWriter = $csvWriter;
+    }
+
+    private function getTableColumns(): array
+    {
+        return $this->tableColumns;
+    }
+
+    private function setTableColumns(array $columns): void
+    {
+        $this->tableColumns = $columns;
+    }
+
+    private function createCsvWriter(string $outputCsvFilePath): CsvWriter
+    {
+        return new CsvWriter(
+            $outputCsvFilePath,
+            CsvWriter::DEFAULT_DELIMITER,
+            CsvWriter::DEFAULT_ENCLOSURE,
+            "\r\n"
+        );
+    }
+
+    public function extractTable(string $tableName, string $outputCsvFilePath): void
+    {
+        $counter = 0;
+        foreach ($this->fetchTableRows($tableName) as $tableRow) {
+            if ($counter === 0) {
+                $this->setCsvWriter($this->createCsvWriter($outputCsvFilePath));
+
+                $columns = [];
+                foreach ($tableRow as $columnName => $value) {
+                    $columns[] = $columnName;
+                }
+
+                $this->setTableColumns($columns);
+                if (!empty($columns)) {
+                    $this->getCsvWriter()->writeRow($columns);
+                }
+            }
+
+            $row = [];
+            foreach ($this->getTableColumns() as $column) {
+                $row[] = $tableRow[$column];
+            }
+
+            $this->getCsvWriter()->writeRow($row);
+            $counter++;
+        }
+
+        if ($counter === 0) {
+            throw new \Exception('Empty export');
+        }
+    }
+
+    public function fetchTableRows(string $tableName): \Iterator
     {
         $sql = sprintf('SELECT * FROM %s.%s', $this->database, $tableName);
 
@@ -36,6 +104,7 @@ class Extractor
             }
         } catch (\Throwable $exception) {
             $this->exceptionHandler->handleException($exception, $this->database, $tableName);
+            throw new \RuntimeException();
         }
     }
 }
