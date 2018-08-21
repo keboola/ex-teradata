@@ -81,6 +81,171 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
+    public function testInvalidHostname(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $this->insertBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $credentials['host'] = 'invalid_hostname';
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testInvalidUsername(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $this->insertBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'The Username or Password is invalid.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $credentials['username'] = 'invalid_username';
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testInvalidPassword(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $this->insertBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'The Username or Password is invalid.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $credentials['#password'] = 'invalid_password';
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testWithoutCredentials(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $this->insertBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testWithoutSpecifiedTables(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $this->insertBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'The path "root.parameters.tables" should have at least 1 element(s) defined.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters'] = [
+            'db' => $credentials,
+            'tables' => [],
+        ];
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
     public function testBasicData(): void
     {
         $testDirectory = __DIR__ . '/basic-data';
@@ -113,9 +278,9 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
-    public function testInvalidCredentials(): void
+    public function testExtractFromNonExistingDatabase(): void
     {
-        $testDirectory = __DIR__ . '/invalid-credentials';
+        $testDirectory = __DIR__ . '/empty-data';
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
@@ -131,25 +296,25 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
+            'Database \'invalid_database\' does not exist.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['host'] = 'invalid_username';
+        $credentials['database'] = 'invalid_database';
         $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
+
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
-    // test without credentials in config
-    public function testWithoutCredentials(): void
+    public function testExtractFromNonExistingTable(): void
     {
-        $testDirectory = __DIR__ . '/invalid-credentials';
+        $testDirectory = __DIR__ . '/empty-data';
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
@@ -165,23 +330,20 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
+            'Table \'invalid_table\' does not exist in database \'ex_teradata_test\'.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        // $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['tables'][0]['name'] = 'invalid_table';
+
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
+
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
-
-    // test without defined tables
-
-    // test with wrong defined table
-
-    // test incremental table
 }

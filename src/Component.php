@@ -14,6 +14,9 @@ class Component extends BaseComponent
     /** @var array */
     private $tableColumns = [];
 
+    /** @var CsvWriter */
+    private $csvWriter;
+
     private function setTableColumns(string $tableName, array $columns): void
     {
         $this->tableColumns[$tableName] = $columns;
@@ -22,6 +25,16 @@ class Component extends BaseComponent
     private function getTableColumns(string $tableName): array
     {
         return $this->tableColumns[$tableName];
+    }
+
+    private function setCsvWriter(CsvWriter $csvWriter): void
+    {
+        $this->csvWriter = $csvWriter;
+    }
+
+    private function getCsvWriter(): CsvWriter
+    {
+        return $this->csvWriter;
     }
 
     private function createConnection(string $host, string $usename, string $password): Connection
@@ -58,7 +71,6 @@ class Component extends BaseComponent
             );
         } catch (\Throwable $exception) {
             $exceptionHandler->handleException($exception);
-            exit();
         }
 
         $extractor = new Extractor($connection, $exceptionHandler, $credentials['database']);
@@ -68,23 +80,27 @@ class Component extends BaseComponent
             $tableName = $table['name'];
             $outputFilePath = $this->getDataDir() . '/out/tables/' . $table['outputTable'] . '.csv';
 
-            $csvWriter = new CsvWriter(
-                $outputFilePath,
-                CsvWriter::DEFAULT_DELIMITER,
-                CsvWriter::DEFAULT_ENCLOSURE,
-                "\r\n"
-            );
-
             $counter = 0;
             foreach ($extractor->extractTable($tableName) as $tableRow) {
                 if ($counter === 0) {
+                    $this->setCsvWriter(
+                        new CsvWriter(
+                            $outputFilePath,
+                            CsvWriter::DEFAULT_DELIMITER,
+                            CsvWriter::DEFAULT_ENCLOSURE,
+                            "\r\n"
+                        )
+                    );
+
                     $columns = [];
                     foreach ($tableRow as $columnName => $value) {
                         $columns[] = $columnName;
                     }
 
                     $this->setTableColumns($tableName, $columns);
-                    $csvWriter->writeRow($columns);
+                    if(!empty($columns)) {
+                        $this->getCsvWriter()->writeRow($columns);
+                    }
                 }
 
                 $row = [];
@@ -92,7 +108,7 @@ class Component extends BaseComponent
                     $row[] = $tableRow[$column];
                 }
 
-                $csvWriter->writeRow($row);
+                $this->getCsvWriter()->writeRow($row);
                 $counter++;
             }
 
