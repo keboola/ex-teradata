@@ -93,7 +93,7 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function insertAgregatedBasicData(Connection $connection, string $database, string $table): void
+    private function insertAggregatedBasicData(Connection $connection, string $database, string $table): void
     {
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
@@ -378,7 +378,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testExtractWithUserSql(): void
     {
-        $testDirectory = __DIR__ . '/agregated-data';
+        $testDirectory = __DIR__ . '/aggregated-data';
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
@@ -394,7 +394,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $this->createDatabase($connection, $database);
         $this->createTable($connection, $database, $table);
-        $this->insertAgregatedBasicData($connection, $database, $table);
+        $this->insertAggregatedBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
