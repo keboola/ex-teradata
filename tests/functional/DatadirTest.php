@@ -60,17 +60,29 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function insertBasicData(Connection $connection, string $database): void
+    private function createDatabase(Connection $connection, string $database): void
     {
-        $table = 'test_1';
-
         try {
             $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
             $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
+    }
 
+    private function createTable(Connection $connection, string $database, string $table): void
+    {
+        try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (16), column2 INTEGER)";
             $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
+    }
 
+    private function insertBasicData(Connection $connection, string $database, string $table): void
+    {
+        try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
             $connection->query($sql);
 
@@ -81,17 +93,9 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function insertAgregatedBasicData(Connection $connection, string $database): void
+    private function insertAgregatedBasicData(Connection $connection, string $database, string $table): void
     {
-        $table = 'test_2';
-
         try {
-            $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
-            $connection->query($sql);
-
-            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (16), column2 INTEGER)";
-            $connection->query($sql);
-
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
             $connection->query($sql);
 
@@ -120,7 +124,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -153,7 +162,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -186,7 +200,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -219,7 +238,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -250,7 +274,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -285,7 +314,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -318,7 +352,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['#password']
         );
 
-        $this->insertAgregatedBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_2';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertAgregatedBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -350,7 +389,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -384,7 +428,51 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['username'],
             $credentials['#password']
         );
-        $this->insertBasicData($connection, $credentials['database']);
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'Table \'invalid_table\' does not exist in database \'ex_teradata_test\'.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['tables'][0]['name'] = 'invalid_table';
+
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractEmptyTable(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
