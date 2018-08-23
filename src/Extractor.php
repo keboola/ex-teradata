@@ -26,8 +26,12 @@ class Extractor
     /** @var array */
     private $tableColumns;
 
-    public function __construct(Connection $connection, ExceptionHandler $exceptionHandler, string $dataDir, string $database)
-    {
+    public function __construct(
+        Connection $connection,
+        ExceptionHandler $exceptionHandler,
+        string $dataDir,
+        string $database
+    ) {
         $this->connection = $connection;
         $this->exceptionHandler = $exceptionHandler;
         $this->dataDir = $dataDir;
@@ -88,7 +92,6 @@ class Extractor
         $counter = 0;
         foreach ($this->fetchTableRows($queryResult, $tableName) as $tableRow) {
             if ($counter === 0) {
-
                 $columns = [];
                 foreach ($tableRow as $columnName => $value) {
                     $columns[] = $columnName;
@@ -116,7 +119,7 @@ class Extractor
         }
     }
 
-    public function fetchTableRows(Result $queryResult , string $tableName): \Iterator
+    public function fetchTableRows(Result $queryResult, string $tableName): \Iterator
     {
         try {
             while ($row = $queryResult->fetch()) {
