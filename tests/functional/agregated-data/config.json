@@ -1,0 +1,12 @@
+{
+  "parameters": {
+    "tables": [
+      {
+        "name": "test_2",
+        "incremental": false,
+        "outputTable": "out.c-main.test-2",
+        "query": "SELECT COUNT(*) AS counting, column2 FROM ex_teradata_test.test_2 GROUP BY column2"
+      }
+    ]
+  }
+}

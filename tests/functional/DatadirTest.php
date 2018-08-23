@@ -81,6 +81,33 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
+    private function insertAgregatedBasicData(Connection $connection, string $database): void
+    {
+        $table = 'test_2';
+
+        try {
+            $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
+            $connection->query($sql);
+
+            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (16), column2 INTEGER)";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table  VALUES ('row3', 1)";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table  VALUES ('row4', 1)";
+            $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
+    }
+
     public function testInvalidHostname(): void
     {
         $testDirectory = __DIR__ . '/empty-data';
@@ -264,6 +291,39 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             0,
             'Extracted tables: "test_1".' . PHP_EOL,
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractWithUserSql(): void
+    {
+        $testDirectory = __DIR__ . '/agregated-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+
+        $this->insertAgregatedBasicData($connection, $credentials['database']);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            'Extracted tables: "test_2".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );

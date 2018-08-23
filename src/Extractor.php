@@ -61,10 +61,18 @@ class Extractor
         );
     }
 
-    public function extractTable(string $tableName, string $outputCsvFilePath): void
+    private function getExportSql(string $tableName): string
     {
+        return sprintf('SELECT * FROM %s.%s', $this->database, $tableName);
+    }
+
+    public function extractTable(string $tableName, string $outputCsvFilePath, ?string $sql): void
+    {
+        if ($sql === null) {
+            $sql = $this->getExportSql($tableName);
+        }
         $counter = 0;
-        foreach ($this->fetchTableRows($tableName) as $tableRow) {
+        foreach ($this->fetchTableRows($tableName, $sql) as $tableRow) {
             if ($counter === 0) {
                 $this->setCsvWriter($this->createCsvWriter($outputCsvFilePath));
 
@@ -93,10 +101,8 @@ class Extractor
         }
     }
 
-    public function fetchTableRows(string $tableName): \Iterator
+    public function fetchTableRows(string $tableName, string $sql): \Iterator
     {
-        $sql = sprintf('SELECT * FROM %s.%s', $this->database, $tableName);
-
         try {
             $sth = $this->connection->query($sql);
             while ($row = $sth->fetch()) {

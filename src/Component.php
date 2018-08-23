@@ -52,8 +52,10 @@ class Component extends BaseComponent
         $exportedTables = [];
         foreach ($tables as $table) {
             $tableName = $table['name'];
+            $sql = $table['query'] ?? null;
+
             $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $table['outputTable'] . '.csv';
-            $extractor->extractTable($tableName, $outputCsvFilePath);
+            $extractor->extractTable($tableName, $outputCsvFilePath, $sql);
 
             $exportedTables[] = $tableName;
         }

@@ -30,6 +30,7 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->prototype('array')
                         ->children()
                             ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                            ->scalarNode('query')->cannotBeEmpty()->end()
                             ->scalarNode('outputTable')->isRequired()->cannotBeEmpty()->end()
                             ->booleanNode('incremental')->defaultValue(false)->end()
                         ->end()
