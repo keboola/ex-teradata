@@ -302,9 +302,46 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
-    public function testBasicData(): void
+    public function testExtractAllFromBasicData(): void
     {
         $testDirectory = __DIR__ . '/basic-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['username'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            'Extracted tables: "test_1".' . PHP_EOL,
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractColumn1FromBasicData(): void
+    {
+        $testDirectory = __DIR__ . '/basic-data-export-one-column';
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();

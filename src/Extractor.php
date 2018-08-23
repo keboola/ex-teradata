@@ -18,15 +18,19 @@ class Extractor
     private $exceptionHandler;
 
     /** @var string */
+    private $dataDir;
+
+    /** @var string */
     private $database;
 
     /** @var array */
     private $tableColumns;
 
-    public function __construct(Connection $connection, ExceptionHandler $exceptionHandler, string $database)
+    public function __construct(Connection $connection, ExceptionHandler $exceptionHandler, string $dataDir, string $database)
     {
         $this->connection = $connection;
         $this->exceptionHandler = $exceptionHandler;
+        $this->dataDir = $dataDir;
         $this->database = $database;
     }
 
@@ -50,14 +54,28 @@ class Extractor
         );
     }
 
-    private function getExportSql(string $tableName): string
+    private function getExportSql(string $tableName, ?array $columns): string
     {
-        return sprintf('SELECT * FROM %s.%s', $this->database, $tableName);
+        if ($columns) {
+            $columnNames = array_map(
+                function ($column) {
+                    return $column['name'];
+                },
+                $columns
+            );
+            $objects = implode(',', $columnNames);
+        } else {
+            $objects = '*';
+        }
+
+        return sprintf('SELECT %s FROM %s.%s', $objects, $this->database, $tableName);
     }
 
-    public function extractTable(string $tableName, string $outputCsvFilePath, ?string $sql): void
+    public function extractTable(array $tableConfig): void
     {
-        $sql = $sql ?? $this->getExportSql($tableName);
+        $tableName = $tableConfig['name'];
+        $outputCsvFilePath = $this->dataDir . '/out/tables/' . $tableConfig['outputTable'] . '.csv';
+        $sql = $tableConfig['query'] ?? $this->getExportSql($tableConfig['name'], $tableConfig['columns']);
 
         try {
             $queryResult = $this->connection->query($sql);

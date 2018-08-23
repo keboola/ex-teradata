@@ -47,17 +47,12 @@ class Component extends BaseComponent
             throw new \RuntimeException();
         }
 
-        $extractor = new Extractor($connection, $exceptionHandler, $credentials['database']);
+        $extractor = new Extractor($connection, $exceptionHandler, $this->getDataDir(), $credentials['database']);
 
         $exportedTables = [];
-        foreach ($tables as $table) {
-            $tableName = $table['name'];
-            $sql = $table['query'] ?? null;
-
-            $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $table['outputTable'] . '.csv';
-            $extractor->extractTable($tableName, $outputCsvFilePath, $sql);
-
-            $exportedTables[] = $tableName;
+        foreach ($tables as $tableConfig) {
+            $extractor->extractTable($tableConfig);
+            $exportedTables[] = $tableConfig['name'];
         }
 
         $this->getLogger()->info(sprintf('Extracted tables: "%s".', implode(', ', $exportedTables)));
