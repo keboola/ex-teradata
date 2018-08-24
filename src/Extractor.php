@@ -67,7 +67,7 @@ class Extractor
         if ($columns) {
             $columnNames = array_map(
                 function ($column) {
-                    return $column['name'];
+                    return sprintf("\"%s\"", $column['name']);
                 },
                 $columns
             );
@@ -86,7 +86,7 @@ class Extractor
         $sql = $tableConfig['query'] ?? $this->getExportSql($tableConfig['name'], $tableConfig['columns']);
 
         try {
-            $queryResult = $this->connection->query($sql);
+            $queryResult = $this->connection->nativeQuery($sql);
         } catch (\Throwable $exception) {
             $this->exceptionHandler->handleException($exception, $this->database, $tableName);
             throw new \RuntimeException();
