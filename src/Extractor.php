@@ -6,6 +6,7 @@ namespace Keboola\ExTeradata;
 
 use Dibi\Connection;
 use Dibi\Result;
+use Dibi\Row;
 use Keboola\Component\UserException;
 use Keboola\Csv\CsvWriter;
 
@@ -24,7 +25,7 @@ class Extractor
     private $database;
 
     /** @var array */
-    private $tableColumns;
+    private $tableColumns = [];
 
     public function __construct(
         Connection $connection,
@@ -40,6 +41,9 @@ class Extractor
 
     private function getTableColumns(): array
     {
+        if (empty($this->tableColumns)) {
+            throw new UserException('Table has no columns.');
+        }
         return $this->tableColumns;
     }
 
@@ -90,27 +94,14 @@ class Extractor
 
         $csvWriter = $this->createCsvWriter($outputCsvFilePath);
         $counter = 0;
+        /** @var Row $tableRow */
         foreach ($this->fetchTableRows($queryResult, $tableName) as $tableRow) {
             if ($counter === 0) {
-                $columns = [];
-                foreach ($tableRow as $columnName => $value) {
-                    $columns[] = $columnName;
-                }
-
-                $this->setTableColumns($columns);
-                if (!empty($columns)) {
-                    $csvWriter->writeRow($columns);
-                } else {
-                    throw new UserException('Table has no columns.');
-                }
+                $this->setTableColumns(array_keys($tableRow->toArray()));
+                $csvWriter->writeRow($this->getTableColumns());
             }
 
-            $row = [];
-            foreach ($this->getTableColumns() as $column) {
-                $row[] = $tableRow[$column];
-            }
-
-            $csvWriter->writeRow($row);
+            $csvWriter->writeRow($tableRow->toArray());
             $counter++;
         }
 
