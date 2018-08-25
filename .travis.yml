@@ -8,6 +8,9 @@ services:
 before_script:
   - export APP_IMAGE=keboola-component
   - docker -v
+  - docker-compose build app tests
+  - docker-compose run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE -e CC_TEST_REPORTER_ID -e GIT_COMMIT_SHA=$TRAVIS_COMMIT -e GIT_BRANCH=$TRAVIS_BRANCH tests
+
   - docker build -t $APP_IMAGE .
   - docker run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE $APP_IMAGE composer ci
 
