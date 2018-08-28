@@ -8,12 +8,14 @@ use Dibi\Connection;
 use Dibi\Result;
 use Dibi\Row;
 use Keboola\Component\UserException;
-use Keboola\Csv\CsvWriter;
 
 class Extractor
 {
     /** @var Connection */
     private $connection;
+
+    /** @var CsvWriterFactory */
+    private $csvWriterFactory;
 
     /** @var ExceptionHandler */
     private $exceptionHandler;
@@ -23,9 +25,11 @@ class Extractor
 
     public function __construct(
         Connection $connection,
+        CsvWriterFactory $csvWriterFactory,
         ExceptionHandler $exceptionHandler
     ) {
         $this->connection = $connection;
+        $this->csvWriterFactory = $csvWriterFactory;
         $this->exceptionHandler = $exceptionHandler;
     }
 
@@ -72,7 +76,7 @@ class Extractor
             throw new \RuntimeException();
         }
 
-        $csvWriter = $this->createCsvWriter($outputCsvFilePath);
+        $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
         $counter = 0;
         /** @var Row $tableRow */
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {

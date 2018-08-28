@@ -9,7 +9,7 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class ConfigDefinition extends BaseConfigDefinition
 {
-    protected function getParametersDefinition(): ArrayNodeDefinition
+    public function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
         // @formatter:off
