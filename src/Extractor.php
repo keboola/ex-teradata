@@ -48,13 +48,20 @@ class Extractor
 
     public function getExportSql(string $database, string $tableName, ?array $columns): string
     {
+        $columns = array_map(
+            function ($column) {
+                return sprintf('"%s"', $column);
+            },
+            $columns
+        );
+
         if ($columns) {
             $objects = implode(',', $columns);
         } else {
             $objects = '*';
         }
 
-        return sprintf('SELECT %s FROM %s.%s', $objects, $database, $tableName);
+        return sprintf('SELECT %s FROM "%s"."%s"', $objects, $database, $tableName);
     }
 
     public function extractTable(string $query, string $outputCsvFilePath): void
