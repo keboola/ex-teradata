@@ -36,9 +36,7 @@ class ExtractorTest extends MockeryTestCase
         $this->extractor = $extractor = new Extractor(
             $this->connectionMock,
             $this->csvWriterFactoryMock,
-            new ExceptionHandler(),
-            '/data',
-            'database_name'
+            new ExceptionHandler()
         );
     }
 
@@ -56,11 +54,10 @@ class ExtractorTest extends MockeryTestCase
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Database \'database_name\' does not exist.');
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table.csv',
-            'columns' => null,
-        ]);
+        $this->extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 
     public function testExtractTableFromNonExistingTableThrowsUserException(): void
@@ -77,60 +74,77 @@ class ExtractorTest extends MockeryTestCase
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Table \'table\' does not exist in database \'database_name\'.');
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table.csv',
-            'columns' => null,
-        ]);
+        $this->extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 
-    public function testExtractTableResultInUnexpectedExceptionThrowsException(): void
+    public function testExtractTableNativeQueryFailsOnUnhandledExceptionThrowRuntimeException(): void
     {
+        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
+        $exceptionHandlerMock->shouldReceive('handleException')
+            ->once()
+            ->withAnyArgs()
+            ->andReturnNull();
+
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
-            ->andThrow(
-                \RuntimeException::class,
-                'Unexpected Exception.'
-            );
+            ->withAnyArgs()
+            ->andThrow(\InvalidArgumentException::class);
+
+        $extractor = new Extractor(
+            $this->connectionMock,
+            $this->csvWriterFactoryMock,
+            $exceptionHandlerMock
+        );
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Unexpected Exception.');
+        $this->expectExceptionMessage('');
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table.csv',
-            'columns' => null,
-        ]);
+        $extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 
-    public function testExtractTableWithEmptyResultThrowsUserException(): void
+    public function testExtractTableFetchFailsOnUnhandledExceptionThrowRuntimeException(): void
     {
+        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
+        $exceptionHandlerMock->shouldReceive('handleException')
+            ->once()
+            ->withAnyArgs()
+            ->andReturnNull();
+
+        $this->csvWriterFactoryMock->shouldReceive('create')
+            ->once()
+            ->withAnyArgs()
+            ->andReturn(\Mockery::mock(CsvWriter::class));
+
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
-            ->andReturn([]);
-
-        $csvWriterMock = \Mockery::mock(CsvWriter::class);
-        $this->csvWriterFactoryMock->shouldReceive('create')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($csvWriterMock);
+            ->andThrow(\InvalidArgumentException::class);
 
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
+            ->withAnyArgs()
             ->andReturn($resultMock);
 
-        $this->expectException(\Throwable::class);
-        $this->expectExceptionMessage('Empty export');
+        $extractor = new Extractor(
+            $this->connectionMock,
+            $this->csvWriterFactoryMock,
+            $exceptionHandlerMock
+        );
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('');
+
+        $extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 
     public function testExtractTableWithNoColumnsThrowsUserException(): void
@@ -161,23 +175,19 @@ class ExtractorTest extends MockeryTestCase
         $this->expectException(\Throwable::class);
         $this->expectExceptionMessage('Table has no columns.');
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
+        $this->extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 
-    public function testExtractTableFailsOnUnexpectedExceptionThrowsException(): void
+    public function testExtractTableWithEmptyResultThrowsUserException(): void
     {
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
-            ->andThrow(
-                \RuntimeException::class,
-                'Unexpected Exception.'
-            );
+            ->andReturn([]);
 
         $csvWriterMock = \Mockery::mock(CsvWriter::class);
         $this->csvWriterFactoryMock->shouldReceive('create')
@@ -190,90 +200,16 @@ class ExtractorTest extends MockeryTestCase
             ->with("SELECT * FROM database_name.table")
             ->andReturn($resultMock);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Unexpected Exception.');
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('Empty export');
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
-    }
-
-    public function testExtractTableNativeQueryFailsOnUnhandledExceptionThrowRuntimeException(): void
-    {
-        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
-        $exceptionHandlerMock->shouldReceive('handleException')
-            ->once()
-            ->withAnyArgs()
-            ->andReturnNull();
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->withAnyArgs()
-            ->andThrow(\InvalidArgumentException::class);
-
-        $extractor = new Extractor(
-            $this->connectionMock,
-            $this->csvWriterFactoryMock,
-            $exceptionHandlerMock,
-            '/data',
-            'database_name'
+        $this->extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
         );
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('');
-
-        $extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
     }
 
-    public function testExtractTableFetchFailsOnUnhandledExceptionThrowRuntimeException(): void
-    {
-        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
-        $exceptionHandlerMock->shouldReceive('handleException')
-            ->once()
-            ->withAnyArgs()
-            ->andReturnNull();
-
-        $this->csvWriterFactoryMock->shouldReceive('create')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn(\Mockery::mock(CsvWriter::class));
-
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('fetch')
-            ->once()
-            ->withNoArgs()
-            ->andThrow(\InvalidArgumentException::class);
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($resultMock);
-
-        $extractor = new Extractor(
-            $this->connectionMock,
-            $this->csvWriterFactoryMock,
-            $exceptionHandlerMock,
-            '/data',
-            'database_name'
-        );
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('');
-
-        $extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
-    }
-
-    public function testExtractTableWithoutDefinedSqlNeitherColumnsSuccessfully(): void
+    public function testExtractTableSuccessfully(): void
     {
         $rows = [
             new Row([
@@ -310,102 +246,9 @@ class ExtractorTest extends MockeryTestCase
             ->with("SELECT * FROM database_name.table")
             ->andReturn($resultMock);
 
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-        ]);
-    }
-
-    public function testExtractTableWithSqlDefinedSuccessfully(): void
-    {
-        $rows = [
-            new Row([
-                'column1' => 'row1',
-                'column2' => 1,
-            ]),
-            new Row([
-                'column1' => 'row2',
-                'column2' => 2,
-            ])
-        ];
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('fetch')
-            ->times(3)
-            ->withNoArgs()
-            ->andReturnUsing(function() use (&$rows) {
-                $row = current($rows);
-                next($rows);
-                return $row;
-            });
-
-        $csvWriterMock = \Mockery::spy(CsvWriter::class);
-        $csvWriterMock->shouldReceive('writeRow')
-            ->times(3)
-            ->withAnyArgs()
-            ->andReturnNull();
-        $this->csvWriterFactoryMock->shouldReceive('create')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($csvWriterMock);
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->with("SELECT * FROM database_name.table")
-            ->andReturn($resultMock);
-
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => null,
-            'query' => 'SELECT * FROM database_name.table',
-        ]);
-    }
-
-    public function testExtractTableWithColumnsDefinedSuccessfully(): void
-    {
-        $rows = [
-            new Row([
-                'column1' => 'row1',
-                'column2' => 1,
-            ]),
-            new Row([
-                'column1' => 'row2',
-                'column2' => 2,
-            ])
-        ];
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('fetch')
-            ->times(3)
-            ->withNoArgs()
-            ->andReturnUsing(function() use (&$rows) {
-                $row = current($rows);
-                next($rows);
-                return $row;
-            });
-
-        $csvWriterMock = \Mockery::spy(CsvWriter::class);
-        $csvWriterMock->shouldReceive('writeRow')
-            ->times(3)
-            ->withAnyArgs()
-            ->andReturnNull();
-        $this->csvWriterFactoryMock->shouldReceive('create')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($csvWriterMock);
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->with("SELECT \"column1\",\"column2\" FROM database_name.table")
-            ->andReturn($resultMock);
-
-        $this->extractor->extractTable([
-            'name' => 'table',
-            'outputTable' => 'table',
-            'columns' => [
-                ['name' => 'column1'],
-                ['name' => 'column2'],
-            ],
-        ]);
+        $this->extractor->extractTable(
+            'SELECT * FROM database_name.table',
+            'table.csv'
+        );
     }
 }

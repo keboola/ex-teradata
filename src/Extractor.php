@@ -46,16 +46,6 @@ class Extractor
         $this->tableColumns = $columns;
     }
 
-    private function createCsvWriter(string $outputCsvFilePath): CsvWriter
-    {
-        return new CsvWriter(
-            $outputCsvFilePath,
-            CsvWriter::DEFAULT_DELIMITER,
-            CsvWriter::DEFAULT_ENCLOSURE,
-            "\r\n"
-        );
-    }
-
     public function getExportSql(string $database, string $tableName, ?array $columns): string
     {
         if ($columns) {
