@@ -52,6 +52,17 @@ class Extractor
         );
     }
 
+    public function getExportSql(string $database, string $tableName, ?array $columns): string
+    {
+        if ($columns) {
+            $objects = implode(',', $columns);
+        } else {
+            $objects = '*';
+        }
+
+        return sprintf('SELECT %s FROM %s.%s', $objects, $database, $tableName);
+    }
+
     public function extractTable(string $query, string $outputCsvFilePath): void
     {
         try {

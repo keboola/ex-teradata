@@ -46,28 +46,18 @@ class Component extends BaseComponent
             throw new \RuntimeException();
         }
 
-        $query = $parameters['query'] ?? $this->getExportSql(
+        $extractor = new Extractor($connection, $exceptionHandler);
+
+        $query = $parameters['query'] ?? $extractor->getExportSql(
             $credentials['database'],
             $parameters['table']['tableName'],
             $parameters['columns']
         );
         $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $parameters['outputTable'] . '.csv';
 
-        $extractor = new Extractor($connection, $exceptionHandler);
         $extractor->extractTable($query, $outputCsvFilePath);
 
         $this->getLogger()->info(sprintf('Extracted table: "%s".', $parameters['name']));
-    }
-
-    private function getExportSql(string $database, string $tableName, ?array $columns): string
-    {
-        if ($columns) {
-            $objects = implode(',', $columns);
-        } else {
-            $objects = '*';
-        }
-
-        return sprintf('SELECT %s FROM %s.%s', $objects, $database, $tableName);
     }
 
     protected function getConfigClass(): string
