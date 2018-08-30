@@ -24,14 +24,13 @@ class Component extends BaseComponent
     {
         $parameters = $this->getConfig()->getParameters();
 
-        $tables = $parameters['tables'] ?? null;
-        if ($tables === null) {
-            throw new UserException('No tables specified to extract.');
-        }
-
         $credentials = $parameters['db'] ?? null;
         if ($credentials === null) {
             throw new UserException('Database credentials must be set.');
+        }
+
+        if (!isset($parameters['query']) && !isset($parameters['table']['tableName'])) {
+            throw new UserException('Table name must be set in configuration.');
         }
 
         $exceptionHandler = new ExceptionHandler();
@@ -47,15 +46,28 @@ class Component extends BaseComponent
             throw new \RuntimeException();
         }
 
-        $extractor = new Extractor($connection, $exceptionHandler, $this->getDataDir(), $credentials['database']);
+        $query = $parameters['query'] ?? $this->getExportSql(
+            $credentials['database'],
+            $parameters['table']['tableName'],
+            $parameters['columns']
+        );
+        $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $parameters['outputTable'] . '.csv';
 
-        $exportedTables = [];
-        foreach ($tables as $tableConfig) {
-            $extractor->extractTable($tableConfig);
-            $exportedTables[] = $tableConfig['name'];
+        $extractor = new Extractor($connection, $exceptionHandler);
+        $extractor->extractTable($query, $outputCsvFilePath);
+
+        $this->getLogger()->info(sprintf('Extracted table: "%s".', $parameters['name']));
+    }
+
+    private function getExportSql(string $database, string $tableName, ?array $columns): string
+    {
+        if ($columns) {
+            $objects = implode(',', $columns);
+        } else {
+            $objects = '*';
         }
 
-        $this->getLogger()->info(sprintf('Extracted tables: "%s".', implode(', ', $exportedTables)));
+        return sprintf('SELECT %s FROM %s.%s', $objects, $database, $tableName);
     }
 
     protected function getConfigClass(): string

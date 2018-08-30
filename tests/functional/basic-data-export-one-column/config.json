@@ -1,16 +1,16 @@
 {
   "parameters": {
-    "tables": [
-      {
-        "name": "test_1",
-        "incremental": false,
-        "outputTable": "out.c-main.test-1",
-        "columns": [
-          {
-            "name": "column1"
-          }
-        ]
-      }
+    "id": 0,
+    "name": "test_1",
+    "outputTable": "out.c-main.test-1",
+    "incremental": false,
+    "primaryKey": null,
+    "table": {
+      "schema": "ex_teradata_test",
+      "tableName": "test_1"
+    },
+    "columns": [
+      "column1"
     ]
   }
 }

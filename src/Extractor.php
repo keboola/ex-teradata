@@ -18,25 +18,15 @@ class Extractor
     /** @var ExceptionHandler */
     private $exceptionHandler;
 
-    /** @var string */
-    private $dataDir;
-
-    /** @var string */
-    private $database;
-
     /** @var array */
     private $tableColumns = [];
 
     public function __construct(
         Connection $connection,
-        ExceptionHandler $exceptionHandler,
-        string $dataDir,
-        string $database
+        ExceptionHandler $exceptionHandler
     ) {
         $this->connection = $connection;
         $this->exceptionHandler = $exceptionHandler;
-        $this->dataDir = $dataDir;
-        $this->database = $database;
     }
 
     private function getTableColumns(): array
@@ -62,40 +52,19 @@ class Extractor
         );
     }
 
-    private function getExportSql(string $tableName, ?array $columns): string
+    public function extractTable(string $query, string $outputCsvFilePath): void
     {
-        if ($columns) {
-            $columnNames = array_map(
-                function ($column) {
-                    return sprintf("\"%s\"", $column['name']);
-                },
-                $columns
-            );
-            $objects = implode(',', $columnNames);
-        } else {
-            $objects = '*';
-        }
-
-        return sprintf('SELECT %s FROM %s.%s', $objects, $this->database, $tableName);
-    }
-
-    public function extractTable(array $tableConfig): void
-    {
-        $tableName = $tableConfig['name'];
-        $outputCsvFilePath = $this->dataDir . '/out/tables/' . $tableConfig['outputTable'] . '.csv';
-        $sql = $tableConfig['query'] ?? $this->getExportSql($tableConfig['name'], $tableConfig['columns']);
-
         try {
-            $queryResult = $this->connection->nativeQuery($sql);
+            $queryResult = $this->connection->nativeQuery($query);
         } catch (\Throwable $exception) {
-            $this->exceptionHandler->handleException($exception, $this->database, $tableName);
+            $this->exceptionHandler->handleException($exception);
             throw new \RuntimeException();
         }
 
         $csvWriter = $this->createCsvWriter($outputCsvFilePath);
         $counter = 0;
         /** @var Row $tableRow */
-        foreach ($this->fetchTableRows($queryResult, $tableName) as $tableRow) {
+        foreach ($this->fetchTableRows($queryResult) as $tableRow) {
             if ($counter === 0) {
                 $this->setTableColumns(array_keys($tableRow->toArray()));
                 $csvWriter->writeRow($this->getTableColumns());
@@ -110,14 +79,14 @@ class Extractor
         }
     }
 
-    public function fetchTableRows(Result $queryResult, string $tableName): \Iterator
+    public function fetchTableRows(Result $queryResult): \Iterator
     {
         try {
             while ($row = $queryResult->fetch()) {
                 yield $row;
             }
         } catch (\Throwable $exception) {
-            $this->exceptionHandler->handleException($exception, $this->database, $tableName);
+            $this->exceptionHandler->handleException($exception);
             throw new \RuntimeException();
         }
     }

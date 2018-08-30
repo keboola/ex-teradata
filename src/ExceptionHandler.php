@@ -8,11 +8,8 @@ use Keboola\Component\UserException;
 
 class ExceptionHandler
 {
-    public function handleException(
-        \Throwable $exception,
-        ?string $databaseName = null,
-        ?string $tableName = null
-    ): void {
+    public function handleException(\Throwable $exception): void
+    {
         if (preg_match(
             '~The Teradata server can\'t currently be reached over this network~',
             $exception->getMessage()
@@ -23,16 +20,24 @@ class ExceptionHandler
             $exception->getMessage()
         )) {
             throw new UserException('The Username or Password is invalid.');
-        } elseif (preg_match('~Object \'.+\..+\' does not exist.~', $exception->getMessage())) {
+        } elseif (preg_match(
+            '~Object \'(.+)\.(.+)\' does not exist.~',
+            $exception->getMessage(),
+            $matches
+        )) {
             throw new UserException(sprintf(
                 'Table \'%s\' does not exist in database \'%s\'.',
-                $tableName,
-                $databaseName
+                $matches[2],
+                $matches[1]
             ));
-        } elseif (preg_match('~Database \'.+\' does not exist.~', $exception->getMessage())) {
+        } elseif (preg_match(
+            '~Database \'(.+)\' does not exist.~',
+            $exception->getMessage(),
+            $matches
+        )) {
             throw new UserException(sprintf(
                 'Database \'%s\' does not exist.',
-                $databaseName
+                $matches[1]
             ));
         } else {
             throw $exception;

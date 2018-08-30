@@ -285,14 +285,15 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'The path "root.parameters.tables" should have at least 1 element(s) defined.' . PHP_EOL,
+            'Table name must be set in configuration.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters'] = [
-            'db' => $credentials,
-            'tables' => [],
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['query'] = null;
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
         ];
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -324,7 +325,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted tables: "test_1".' . PHP_EOL,
+            'Extracted table: "test_1".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );
@@ -361,7 +362,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted tables: "test_1".' . PHP_EOL,
+            'Extracted table: "test_1".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );
@@ -399,7 +400,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted tables: "test_2".' . PHP_EOL,
+            'Extracted table: "test_2".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );
@@ -482,7 +483,10 @@ class DatadirTest extends AbstractDatadirTestCase
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['tables'][0]['name'] = 'invalid_table';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'invalid_table',
+        ];
 
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -521,7 +525,10 @@ class DatadirTest extends AbstractDatadirTestCase
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['tables'][0]['name'] = 'invalid_table';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'invalid_table',
+        ];
 
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',

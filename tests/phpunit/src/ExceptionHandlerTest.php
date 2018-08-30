@@ -54,11 +54,7 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Database \'invalid_database_name\' does not exist.');
-        $this->exceptionHandler->handleException(
-            $exception,
-            'invalid_database_name',
-            'table_name'
-        );
+        $this->exceptionHandler->handleException($exception);
     }
 
     public function testExceptionHandlerNotExistingTableThrowUserException(): void
@@ -70,11 +66,7 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Table \'invalid_table_name\' does not exist in database \'database_name\'.');
-        $this->exceptionHandler->handleException(
-            $exception,
-            'database_name',
-            'invalid_table_name'
-        );
+        $this->exceptionHandler->handleException($exception);
     }
 
     public function testExceptionHandlerRuntimeExceptionIsPassedAbove(): void
@@ -83,10 +75,6 @@ class ExceptionHandlerTest extends MockeryTestCase
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Some exception');
-        $this->exceptionHandler->handleException(
-            $exception,
-            'table_name',
-            'database_name'
-        );
+        $this->exceptionHandler->handleException($exception);
     }
 }

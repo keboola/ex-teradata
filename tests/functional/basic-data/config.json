@@ -1,11 +1,12 @@
 {
   "parameters": {
-    "tables": [
-      {
-        "name": "test_1",
-        "incremental": false,
-        "outputTable": "out.c-main.test-1"
-      }
-    ]
+    "id": 0,
+    "name": "test_1",
+    "outputTable": "out.c-main.test-1",
+    "incremental": false,
+    "primaryKey": null,
+    "table": {
+      "tableName": "test_1"
+    }
   }
 }
