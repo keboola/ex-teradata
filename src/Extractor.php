@@ -8,12 +8,14 @@ use Dibi\Connection;
 use Dibi\Result;
 use Dibi\Row;
 use Keboola\Component\UserException;
-use Keboola\Csv\CsvWriter;
 
 class Extractor
 {
     /** @var Connection */
     private $connection;
+
+    /** @var CsvWriterFactory */
+    private $csvWriterFactory;
 
     /** @var ExceptionHandler */
     private $exceptionHandler;
@@ -23,9 +25,11 @@ class Extractor
 
     public function __construct(
         Connection $connection,
+        CsvWriterFactory $csvWriterFactory,
         ExceptionHandler $exceptionHandler
     ) {
         $this->connection = $connection;
+        $this->csvWriterFactory = $csvWriterFactory;
         $this->exceptionHandler = $exceptionHandler;
     }
 
@@ -42,25 +46,22 @@ class Extractor
         $this->tableColumns = $columns;
     }
 
-    private function createCsvWriter(string $outputCsvFilePath): CsvWriter
-    {
-        return new CsvWriter(
-            $outputCsvFilePath,
-            CsvWriter::DEFAULT_DELIMITER,
-            CsvWriter::DEFAULT_ENCLOSURE,
-            "\r\n"
-        );
-    }
-
     public function getExportSql(string $database, string $tableName, ?array $columns): string
     {
+        $columns = array_map(
+            function ($column) {
+                return sprintf('"%s"', $column);
+            },
+            $columns
+        );
+
         if ($columns) {
             $objects = implode(',', $columns);
         } else {
             $objects = '*';
         }
 
-        return sprintf('SELECT %s FROM %s.%s', $objects, $database, $tableName);
+        return sprintf('SELECT %s FROM "%s"."%s"', $objects, $database, $tableName);
     }
 
     public function extractTable(string $query, string $outputCsvFilePath): void
@@ -72,7 +73,7 @@ class Extractor
             throw new \RuntimeException();
         }
 
-        $csvWriter = $this->createCsvWriter($outputCsvFilePath);
+        $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
         $counter = 0;
         /** @var Row $tableRow */
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {

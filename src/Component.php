@@ -46,7 +46,11 @@ class Component extends BaseComponent
             throw new \RuntimeException();
         }
 
-        $extractor = new Extractor($connection, $exceptionHandler);
+        $extractor = new Extractor(
+            $connection,
+            new CsvWriterFactory(),
+            $exceptionHandler
+        );
 
         $query = $parameters['query'] ?? $extractor->getExportSql(
             $credentials['database'],
