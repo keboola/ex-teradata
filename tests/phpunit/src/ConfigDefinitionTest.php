@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\ExTeradata\Tests\Unit\src;
 
 use Keboola\ExTeradata\ConfigDefinition;

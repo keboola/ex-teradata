@@ -8,7 +8,7 @@ use Keboola\Csv\CsvWriter;
 
 class CsvWriterFactory
 {
-    public function create($outputCsvFilePath): CsvWriter
+    public function create(string $outputCsvFilePath): CsvWriter
     {
         return new CsvWriter(
             $outputCsvFilePath,

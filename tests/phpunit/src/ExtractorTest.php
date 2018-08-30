@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\ExTeradata\Tests\Unit\src;
 
 use DG\BypassFinals;
@@ -242,13 +244,13 @@ class ExtractorTest extends MockeryTestCase
             new Row([
                 'column1' => 'row2',
                 'column2' => 2,
-            ])
+            ]),
         ];
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->times(3)
             ->withNoArgs()
-            ->andReturnUsing(function() use (&$rows) {
+            ->andReturnUsing(function () use (&$rows) {
                 $row = current($rows);
                 next($rows);
                 return $row;
