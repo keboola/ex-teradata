@@ -10,12 +10,12 @@ use Keboola\Component\UserException;
 
 class Component extends BaseComponent
 {
-    private function createConnection(string $host, string $usename, string $password): Connection
+    private function createConnection(string $host, string $user, string $password): Connection
     {
         return new Connection([
             'dsn' => sprintf('DRIVER={Teradata};DBCName=%s', $host),
             'driver'   => 'odbc',
-            'username' => $usename,
+            'username' => $user,
             'password' => $password,
         ]);
     }
@@ -38,7 +38,7 @@ class Component extends BaseComponent
         try {
             $connection = $this->createConnection(
                 $credentials['host'],
-                $credentials['username'],
+                $credentials['user'],
                 $credentials['#password']
             );
         } catch (\Throwable $exception) {

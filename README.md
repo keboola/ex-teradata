@@ -11,65 +11,78 @@ Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 The following parameters are required:
 
 - `host` - IP address or Hostname for Teradata server
-- `username` - User with correct access rights
+- `user` - User with correct access rights
 - `#password` - Password for given User
 - `database` - Database name
 
-At least one table must be must be specified. Table definition might contain `query` parameter with SQL for complex data export e.g. aggregated tables or `columns` object with field `name` (database column name) for specifing exporting table columns. When specifiing both parameters, the query will be used. In case of leaving both parameters unset, all available columns will be extracted.
-
-Sample configuration:
+Configuration with custom query:
 
 ```json
 {
     "parameters": {
         "db": {
             "host": "100.200.30.40",
-            "username": "tduser",
+            "user": "tduser",
             "#password": "tdpassword",
             "database": "tddatabase"
         },
-        "tables": [
-            {
-                "name": "tablename",
-                "incremental": false,
-                "outputTable": "out.c-bucket.tablename"
-            }
-        ]
+        "name": "tablename",
+        "query": "SELECT COUNT(*) c, column1 FROM tddatabase.tablename GROUP BY column1"
+        "outputTable": "out.c-main.tablename",
+        "incremental": false,
+        "primaryKey": null
     }
 }
 ``` 
 
-Configuration with custom query:
+Configuration with defined table:
 
 ```json
-"tables": [
-	{
-		"name": "tablename",
+{
+	"parameters": {
+		"db": {
+		    "host": "100.200.30.40",
+		    "user": "tduser",
+		    "#password": "tdpassword",
+		    "database": "tddatabase"
+		},
+		"name": "test_1",
+		"outputTable": "out.c-main.test-1",
 		"incremental": false,
-		"outputTable": "out.c-bucket.tablename",
-		"query": "SELECT COUNT(*) c, column1 FROM tddatabase.tablename GROUP BY column1"
+		"primaryKey": null,
+		"table": {
+			"schema": "tddatabase",
+			"tableName": "test_1"
+		}
 	}
-]	
+}
 ```
+
 
 Configuration with defined columns:
 
 ```json
-"tables": [
-	{
-		"name": "tablename",
+{
+	"parameters": {
+		"db": {
+		    "host": "100.200.30.40",
+		    "user": "tduser",
+		    "#password": "tdpassword",
+		    "database": "tddatabase"
+		},
+		"name": "test_1",
+		"outputTable": "out.c-main.test-1",
 		"incremental": false,
-		"outputTable": "out.c-bucket.tablename",
+		"primaryKey": null,
+		"table": {
+			"schema": "tddatabase",
+			"tableName": "test_1"
+		},
 		"columns": [
-			{
-				"name": "column1"
-			},
-			{
-				"name": "column2"
-			}
+			"column1"
 		]
 	}
-]
+}
 ```
 
 ## Development
@@ -80,7 +93,7 @@ Clone this repository and init the workspace with following command:
 git clone https://github.com/keboola/ex-teradata
 cd my-component
 docker-compose build
-docker-compose run --rm app composer install --no-scripts
+docker-compose run --rm dev composer install --no-scripts
 ```
 
 Create `.env` file:
@@ -94,7 +107,7 @@ TERADATA_DATABASE=ex_teradata_test
 Run the test suite using this command:
 
 ```
-docker-compose run --rm app composer tests
+docker-compose run --rm dev composer tests
 ```
  
 # Integration

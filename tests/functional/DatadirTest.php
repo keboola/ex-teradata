@@ -10,12 +10,12 @@ use Keboola\DatadirTests\DatadirTestSpecification;
 
 class DatadirTest extends AbstractDatadirTestCase
 {
-    private function createConnection(string $host, string $usename, string $password): Connection
+    private function createConnection(string $host, string $user, string $password): Connection
     {
         return new Connection([
             'dsn' => sprintf('DRIVER={Teradata};DBCName=%s', $host),
             'driver'   => 'odbc',
-            'username' => $usename,
+            'username' => $user,
             'password' => $password,
         ]);
     }
@@ -34,7 +34,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         return [
             'host' => getenv('TERADATA_HOST'),
-            'username' => getenv('TERADATA_USERNAME'),
+            'user' => getenv('TERADATA_USERNAME'),
             '#password' => getenv('TERADATA_PASSWORD'),
             'database' => getenv('TERADATA_DATABASE'),
         ];
@@ -47,7 +47,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $credentials = $this->getCredentials();
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
 
@@ -121,7 +121,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -150,7 +150,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
-    public function testInvalidUsername(): void
+    public function testInvalidUser(): void
     {
         $testDirectory = __DIR__ . '/empty-data';
 
@@ -159,7 +159,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -173,12 +173,12 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'The Username or Password is invalid.' . PHP_EOL,
+            'The User or Password is invalid.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['username'] = 'invalid_username';
+        $credentials['user'] = 'invalid_user';
         $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -197,7 +197,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -211,7 +211,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'The Username or Password is invalid.' . PHP_EOL,
+            'The User or Password is invalid.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -235,7 +235,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -271,7 +271,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -312,7 +312,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -349,7 +349,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -386,7 +386,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
 
@@ -424,7 +424,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -463,7 +463,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];
@@ -506,7 +506,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = $this->createConnection(
             $credentials['host'],
-            $credentials['username'],
+            $credentials['user'],
             $credentials['#password']
         );
         $database = $credentials['database'];

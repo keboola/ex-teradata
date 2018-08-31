@@ -41,7 +41,7 @@ class ExceptionHandlerTest extends MockeryTestCase
         );
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('The Username or Password is invalid.');
+        $this->expectExceptionMessage('The User or Password is invalid.');
         $this->exceptionHandler->handleException($exception);
     }
 

@@ -19,7 +19,7 @@ class ExceptionHandler
             '~The UserId, Password or Account is invalid.~',
             $exception->getMessage()
         )) {
-            throw new UserException('The Username or Password is invalid.');
+            throw new UserException('The User or Password is invalid.');
         } elseif (preg_match(
             '~Object \'(.+)\.(.+)\' does not exist.~',
             $exception->getMessage(),
