@@ -105,42 +105,8 @@ class ExtractorTest extends MockeryTestCase
         );
     }
 
-    public function testExtractTableNativeQueryFailsOnUnhandledExceptionThrowRuntimeException(): void
-    {
-        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
-        $exceptionHandlerMock->shouldReceive('handleException')
-            ->once()
-            ->withAnyArgs()
-            ->andReturnNull();
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->withAnyArgs()
-            ->andThrow(\InvalidArgumentException::class);
-
-        $extractor = new Extractor(
-            $this->connectionMock,
-            $this->csvWriterFactoryMock,
-            $exceptionHandlerMock
-        );
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('');
-
-        $extractor->extractTable(
-            'SELECT * FROM database_name.table',
-            'table.csv'
-        );
-    }
-
     public function testExtractTableFetchFailsOnUnhandledExceptionThrowRuntimeException(): void
     {
-        $exceptionHandlerMock = \Mockery::mock(ExceptionHandler::class);
-        $exceptionHandlerMock->shouldReceive('handleException')
-            ->once()
-            ->withAnyArgs()
-            ->andReturnNull();
-
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
@@ -150,7 +116,10 @@ class ExtractorTest extends MockeryTestCase
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
-            ->andThrow(\InvalidArgumentException::class);
+            ->andThrow(
+                \InvalidArgumentException::class,
+                'Invalid argument message.'
+            );
 
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
@@ -160,11 +129,11 @@ class ExtractorTest extends MockeryTestCase
         $extractor = new Extractor(
             $this->connectionMock,
             $this->csvWriterFactoryMock,
-            $exceptionHandlerMock
+            new ExceptionHandler()
         );
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid argument message.');
 
         $extractor->extractTable(
             'SELECT * FROM database_name.table',

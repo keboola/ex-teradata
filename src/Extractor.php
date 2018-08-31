@@ -53,8 +53,7 @@ class Extractor
         try {
             $queryResult = $this->connection->nativeQuery($query);
         } catch (\Throwable $exception) {
-            $this->exceptionHandler->handleException($exception);
-            throw new \RuntimeException();
+            throw $this->exceptionHandler->createException($exception);
         }
 
         $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
@@ -85,8 +84,7 @@ class Extractor
                 yield $row;
             }
         } catch (\Throwable $exception) {
-            $this->exceptionHandler->handleException($exception);
-            throw new \RuntimeException();
+            throw $this->exceptionHandler->createException($exception);
         }
     }
 }

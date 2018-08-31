@@ -42,8 +42,7 @@ class Component extends BaseComponent
                 $credentials['#password']
             );
         } catch (\Throwable $exception) {
-            $exceptionHandler->handleException($exception);
-            throw new \RuntimeException();
+            throw $exceptionHandler->createException($exception);
         }
 
         $extractor = new Extractor(

@@ -23,58 +23,68 @@ class ExceptionHandlerTest extends MockeryTestCase
 
     public function testExceptionHandlerInvalidHostThrowUserException(): void
     {
-        $exception = new DriverException(
-            '[unixODBC][Teradata][WSock32 DLL] (439) WSA E HostUnreach:'
-            . ' The Teradata server can\'t currently be reached over this network 08001'
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[unixODBC][Teradata][WSock32 DLL] (439) WSA E HostUnreach:'
+                . ' The Teradata server can\'t currently be reached over this network 08001'
+            )
         );
 
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('The Teradata server can\'t currently be reached over this network.');
-        $this->exceptionHandler->handleException($exception);
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'The Teradata server can\'t currently be reached over this network.',
+            $exception->getMessage()
+        );
     }
 
     public function testExceptionHandlerInvalidCredentialsThrowUserException(): void
     {
-        $exception = new DriverException(
-            '[unixODBC][Teradata][ODBC Teradata Driver][Teradata Database] (210)'
-            . ' The UserId, Password or Account is invalid. FailCode = -8017 28000'
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[unixODBC][Teradata][ODBC Teradata Driver][Teradata Database] (210)'
+                . ' The UserId, Password or Account is invalid. FailCode = -8017 28000'
+            )
         );
 
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('The User or Password is invalid.');
-        $this->exceptionHandler->handleException($exception);
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals('The User or Password is invalid.', $exception->getMessage());
     }
 
     public function testExceptionHandlerNonExistingDatabaseThrowUserException(): void
     {
-        $exception = new DriverException(
-            '[Teradata][ODBC Teradata Driver][Teradata Database](-3802)Database'
-            . ' \'invalid_database_name\' does not exist. S0002'
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[Teradata][ODBC Teradata Driver][Teradata Database](-3802)Database'
+                . ' \'invalid_database_name\' does not exist. S0002'
+            )
         );
 
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Database \'invalid_database_name\' does not exist.');
-        $this->exceptionHandler->handleException($exception);
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals('Database \'invalid_database_name\' does not exist.', $exception->getMessage());
     }
 
     public function testExceptionHandlerNotExistingTableThrowUserException(): void
     {
-        $exception = new DriverException(
-            '[Teradata][ODBC Teradata Driver][Teradata Database](-3807)Object'
-            . ' \'database_name.invalid_table_name\' does not exist. S0002'
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[Teradata][ODBC Teradata Driver][Teradata Database](-3807)Object'
+                . ' \'database_name.invalid_table_name\' does not exist. S0002'
+            )
         );
 
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Table \'invalid_table_name\' does not exist in database \'database_name\'.');
-        $this->exceptionHandler->handleException($exception);
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Table \'invalid_table_name\' does not exist in database \'database_name\'.',
+            $exception->getMessage()
+        );
     }
 
     public function testExceptionHandlerRuntimeExceptionIsPassedAbove(): void
     {
-        $exception = new \RuntimeException('Some exception');
+        $exception = $this->exceptionHandler->createException(new \RuntimeException('Some exception'));
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Some exception');
-        $this->exceptionHandler->handleException($exception);
+
+        $this->assertInstanceOf(\RuntimeException::class, $exception);
+        $this->assertEquals('Some exception', $exception->getMessage());
     }
 }

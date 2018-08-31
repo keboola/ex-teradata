@@ -52,12 +52,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
 
         $database = 'ex_teradata_test';
-        try {
-            $connection->query('DELETE DATABASE ' . $database);
-            $connection->query('DROP DATABASE ' . $database);
-        } catch (\Throwable $exception) {
-            throw $exception;
-        }
+
+        $connection->query('DELETE DATABASE ' . $database);
+        $connection->query('DROP DATABASE ' . $database);
     }
 
     private function createDatabase(Connection $connection, string $database): void
