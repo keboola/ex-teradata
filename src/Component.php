@@ -6,7 +6,6 @@ namespace Keboola\ExTeradata;
 
 use Dibi\Connection;
 use Keboola\Component\BaseComponent;
-use Keboola\Component\UserException;
 
 class Component extends BaseComponent
 {

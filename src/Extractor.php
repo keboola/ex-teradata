@@ -40,7 +40,7 @@ class Extractor
 
         $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
         $counter = 0;
-        /** @var Row $tableRow */
+
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {
             if ($counter === 0) {
                 $columns = array_keys($tableRow->toArray());
@@ -59,6 +59,12 @@ class Extractor
         }
     }
 
+    /**
+     * @param Result $queryResult
+     *
+     * @return \Iterator|Row[]
+     * @throws \Throwable
+     */
     public function fetchTableRows(Result $queryResult): \Iterator
     {
         try {
