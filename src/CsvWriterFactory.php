@@ -10,11 +10,6 @@ class CsvWriterFactory
 {
     public function create(string $outputCsvFilePath): CsvWriter
     {
-        return new CsvWriter(
-            $outputCsvFilePath,
-            CsvWriter::DEFAULT_DELIMITER,
-            CsvWriter::DEFAULT_ENCLOSURE,
-            "\r\n"
-        );
+        return new CsvWriter($outputCsvFilePath);
     }
 }
