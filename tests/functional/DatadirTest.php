@@ -56,7 +56,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $connection->query('DELETE DATABASE ' . $database);
             $connection->query('DROP DATABASE ' . $database);
         } catch (\Throwable $exception) {
-            print $exception->getMessage();
+            throw $exception;
         }
     }
 
