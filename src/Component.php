@@ -45,13 +45,14 @@ class Component extends BaseComponent
             throw $exceptionHandler->createException($exception);
         }
 
+        $extractorHelper = new ExtractorHelper();
         $extractor = new Extractor(
             $connection,
             new CsvWriterFactory(),
             $exceptionHandler
         );
 
-        $query = $parameters['query'] ?? $extractor->getExportSql(
+        $query = $parameters['query'] ?? $extractorHelper->getExportSql(
             $credentials['database'],
             $parameters['table']['tableName'],
             $parameters['columns']

@@ -337,6 +337,121 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
+    public function testExtractEmptyDataWithRestrictedCharacterInDatabaseName(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'Object \'database"_name\' contain restricted character \'"\'.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['db']['database'] = 'database"_name';
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractEmptyDataWithRestrictedCharacterInTableName(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'Object \'te"st_1\' contain restricted character \'"\'.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['table']['tableName'] = 'te"st_1';
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractEmptyDataWithRestrictedCharacterInColumnName(): void
+    {
+        $testDirectory = __DIR__ . '/empty-data';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = $this->createConnection(
+            $credentials['host'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'Object \'col"umn1\' contain restricted character \'"\'.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['table']['tableName'] = 'test_1';
+        $configuration['parameters']['columns'] = ['col"umn1'];
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
     public function testExtractColumn1FromBasicData(): void
     {
         $testDirectory = __DIR__ . '/basic-data-export-one-column';

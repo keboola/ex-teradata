@@ -42,29 +42,6 @@ class ExtractorTest extends MockeryTestCase
         );
     }
 
-    public function testGetExportSqlWithTableDefined(): void
-    {
-        $this->assertEquals(
-            'SELECT * FROM "database_name"."table"',
-            $this->extractor->getExportSql('database_name', 'table', [])
-        );
-    }
-
-    public function testGetExportSqlWithColumnsDefined(): void
-    {
-        $this->assertEquals(
-            'SELECT "column1","column2" FROM "database_name"."table"',
-            $this->extractor->getExportSql(
-                'database_name',
-                'table',
-                [
-                    'column1',
-                    'column2',
-                ]
-            )
-        );
-    }
-
     public function testExtractTableFromNonExistingDatabaseThrowsUserException(): void
     {
         $this->connectionMock->shouldReceive('nativeQuery')
