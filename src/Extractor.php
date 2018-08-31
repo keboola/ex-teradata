@@ -20,9 +20,6 @@ class Extractor
     /** @var ExceptionHandler */
     private $exceptionHandler;
 
-    /** @var array */
-    private $tableColumns = [];
-
     public function __construct(
         Connection $connection,
         CsvWriterFactory $csvWriterFactory,
@@ -31,19 +28,6 @@ class Extractor
         $this->connection = $connection;
         $this->csvWriterFactory = $csvWriterFactory;
         $this->exceptionHandler = $exceptionHandler;
-    }
-
-    private function getTableColumns(): array
-    {
-        if (empty($this->tableColumns)) {
-            throw new UserException('Table has no columns.');
-        }
-        return $this->tableColumns;
-    }
-
-    private function setTableColumns(array $columns): void
-    {
-        $this->tableColumns = $columns;
     }
 
     public function getExportSql(string $database, string $tableName, ?array $columns): string
@@ -78,8 +62,11 @@ class Extractor
         /** @var Row $tableRow */
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {
             if ($counter === 0) {
-                $this->setTableColumns(array_keys($tableRow->toArray()));
-                $csvWriter->writeRow($this->getTableColumns());
+                $columns = array_keys($tableRow->toArray());
+                if (empty($columns)) {
+                    throw new UserException('Table has no columns.');
+                }
+                $csvWriter->writeRow($columns);
             }
 
             $csvWriter->writeRow($tableRow->toArray());
