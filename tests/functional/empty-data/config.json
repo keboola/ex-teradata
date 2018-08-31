@@ -1,11 +1,9 @@
 {
   "parameters": {
-    "id": 0,
     "name": "test_1",
     "outputTable": "out.c-main.test-1",
     "incremental": false,
     "primaryKey": null,
-    "enabled": true,
     "table": {
       "tableName": "test_1"
     }
