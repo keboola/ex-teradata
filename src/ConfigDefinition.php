@@ -26,7 +26,8 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->end()
                 ->end()
             ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('query')->end()
+            ->scalarNode('query')
+            ->end()
             ->arrayNode('table')
                 ->children()
                     ->scalarNode('schema')->end()
@@ -44,6 +45,14 @@ class ConfigDefinition extends BaseConfigDefinition
             ->integerNode('retries')->min(1)->end()
             ->booleanNode('advancedMode')->end()
         ;
+
+        $parametersNode->validate()
+            ->ifTrue(function ($v) {
+                return !isset($v['query']) && !isset($v['table']['tableName']);
+            })
+            ->thenInvalid('The \'query\' or \'table.tableName\' option is required.')
+            ->end();
+
         // @formatter:on
         return $parametersNode;
     }

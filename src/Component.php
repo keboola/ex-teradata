@@ -24,22 +24,13 @@ class Component extends BaseComponent
     {
         $parameters = $this->getConfig()->getParameters();
 
-        $credentials = $parameters['db'] ?? null;
-        if ($credentials === null) {
-            throw new UserException('Database credentials must be set.');
-        }
-
-        if (!isset($parameters['query']) && !isset($parameters['table']['tableName'])) {
-            throw new UserException('Table name must be set in configuration.');
-        }
-
         $exceptionHandler = new ExceptionHandler();
 
         try {
             $connection = $this->createConnection(
-                $credentials['host'],
-                $credentials['user'],
-                $credentials['#password']
+                $parameters['db']['host'],
+                $parameters['db']['user'],
+                $parameters['db']['#password']
             );
         } catch (\Throwable $exception) {
             throw $exceptionHandler->createException($exception);
@@ -53,7 +44,7 @@ class Component extends BaseComponent
         );
 
         $query = $parameters['query'] ?? $extractorHelper->getExportSql(
-            $credentials['database'],
+            $parameters['db']['database'],
             $parameters['table']['tableName'],
             $parameters['columns']
         );

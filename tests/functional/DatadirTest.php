@@ -259,7 +259,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
-    public function testWithoutSpecifiedTables(): void
+    public function testWithoutSpecifiedTable(): void
     {
         $testDirectory = __DIR__ . '/empty-data';
 
@@ -282,7 +282,8 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Table name must be set in configuration.' . PHP_EOL,
+            'Invalid configuration for path "root.parameters": The \'query\''
+                . ' or \'table.tableName\' option is required.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
