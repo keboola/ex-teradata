@@ -83,6 +83,14 @@ docker-compose build
 docker-compose run --rm app composer install --no-scripts
 ```
 
+Create `.env` file:
+```
+TERADATA_HOST=35.158.41.16
+TERADATA_USERNAME=dbc
+TERADATA_PASSWORD=
+TERADATA_DATABASE=ex_teradata_test
+```
+
 Run the test suite using this command:
 
 ```
