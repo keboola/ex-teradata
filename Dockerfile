@@ -13,6 +13,7 @@ COPY docker/composer-install.sh /tmp/composer-install.sh
 RUN apt-get update && apt-get install -y \
         git \
         unzip \
+        libc6 \
         lib32stdc++6 \
         unixodbc \
         unixodbc-dev
