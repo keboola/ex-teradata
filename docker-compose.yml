@@ -1,6 +1,6 @@
 version: '2'
 services:
-  app:
+  dev:
     build: .
     image: keboola/ex_teradata
     volumes:
