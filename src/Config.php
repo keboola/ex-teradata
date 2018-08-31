@@ -62,10 +62,6 @@ class Config extends BaseConfig
 
     public function getColumns(): array
     {
-        try {
-            return $this->getValue(['parameters', 'columns']);
-        } catch (\InvalidArgumentException $exception) {
-            return [];
-        }
+        return $this->getValue(['parameters', 'columns']);
     }
 }
