@@ -17,8 +17,7 @@ RUN apt-get update && apt-get install -y \
         unixodbc \
         unixodbc-dev
 
-RUN rm -r /var/lib/apt/lists/* \
-	&& chmod +x /tmp/composer-install.sh \
+RUN chmod +x /tmp/composer-install.sh \
 	&& /tmp/composer-install.sh
 
 COPY docker/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb

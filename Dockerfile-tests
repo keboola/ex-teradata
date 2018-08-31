@@ -1,7 +1,7 @@
 FROM keboola/ex_teradata
 
 RUN pecl install xdebug
-RUN echo "zend_extension=\"/usr/local/lib/php/extensions/no-debug-non-zts-20170718/xdebug.so\"" >> /usr/local/etc/php/php.ini
+RUN docker-php-ext-enable xdebug
 
 COPY code-coverage.sh code-coverage.sh
 RUN chmod +x code-coverage.sh
