@@ -282,8 +282,8 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Invalid configuration for path "root.parameters": The \'query\''
-                . ' or \'table.tableName\' option is required.' . PHP_EOL,
+            'Invalid configuration for path "root.parameters": The \'query\' or'
+                . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -367,7 +367,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['db']['database'] = 'database"_name';
+        $configuration['parameters']['table']['schema'] = 'database"_name';
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -556,8 +556,8 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['database'] = 'invalid_database';
         $configuration['parameters']['db'] = $credentials;
+        $configuration['parameters']['table']['schema'] = 'invalid_database';
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)

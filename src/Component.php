@@ -21,15 +21,16 @@ class Component extends BaseComponent
 
     public function run(): void
     {
-        $parameters = $this->getConfig()->getParameters();
+        /** @var Config $config */
+        $config = $this->getConfig();
 
         $exceptionHandler = new ExceptionHandler();
 
         try {
             $connection = $this->createConnection(
-                $parameters['db']['host'],
-                $parameters['db']['user'],
-                $parameters['db']['#password']
+                $config->getHost(),
+                $config->getUser(),
+                $config->getPassword()
             );
         } catch (\Throwable $exception) {
             throw $exceptionHandler->createException($exception);
@@ -42,16 +43,16 @@ class Component extends BaseComponent
             $exceptionHandler
         );
 
-        $query = $parameters['query'] ?? $extractorHelper->getExportSql(
-            $parameters['db']['database'],
-            $parameters['table']['tableName'],
-            $parameters['columns']
+        $query = $config->getQuery() ?? $extractorHelper->getExportSql(
+            $config->getSchema(),
+            $config->getTableName(),
+            $config->getColumns()
         );
-        $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $parameters['outputTable'] . '.csv';
+        $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $config->getOutputTable() . '.csv';
 
         $extractor->extractTable($query, $outputCsvFilePath);
 
-        $this->getLogger()->info(sprintf('Extracted table: "%s".', $parameters['name']));
+        $this->getLogger()->info(sprintf('Extracted table: "%s".', $config->getName()));
     }
 
     protected function getConfigClass(): string

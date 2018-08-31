@@ -48,9 +48,13 @@ class ConfigDefinition extends BaseConfigDefinition
 
         $parametersNode->validate()
             ->ifTrue(function ($v) {
-                return !isset($v['query']) && !isset($v['table']['tableName']);
+                return !isset($v['query'])
+                    && (
+                        !isset($v['table']['tableName'])
+                        || !isset($v['table']['schema'])
+                    );
             })
-            ->thenInvalid('The \'query\' or \'table.tableName\' option is required.')
+            ->thenInvalid('The \'query\' or \'table.schema\' with \'table.tableName\' option is required.')
             ->end();
 
         // @formatter:on
