@@ -25,7 +25,6 @@ class ConfigDefinition extends BaseConfigDefinition
                         ->scalarNode('database')->isRequired()->cannotBeEmpty()->end()
                     ->end()
                 ->end()
-            ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('query')
             ->end()
             ->arrayNode('table')

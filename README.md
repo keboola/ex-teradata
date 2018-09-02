@@ -23,7 +23,6 @@ There are 2 possible types of table extraction.
 
 The extraction has the following configuration options:
 
-- `name`: string (required)
 - `query`: stirng (optional, but required if `table` not present)
 - `table`: array (optional, but required if `query` not present)
   - `schema`: string

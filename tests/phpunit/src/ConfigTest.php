@@ -30,7 +30,6 @@ class ConfigTest extends TestCase
                     '#password' => 'password',
                     'database' => 'database',
                 ],
-                'name' => 'tableName',
                 'query' => 'SELECT a FROM b',
                 'outputTable' => 'outputFile',
             ],
@@ -44,7 +43,6 @@ class ConfigTest extends TestCase
         $this->assertEquals('hostname', $config->getHost());
         $this->assertEquals('username', $config->getUser());
         $this->assertEquals('password', $config->getPassword());
-        $this->assertEquals('tableName', $config->getName());
         $this->assertEquals('SELECT a FROM b', $config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
         $this->assertNull($config->getSchema());
@@ -62,7 +60,6 @@ class ConfigTest extends TestCase
                     '#password' => 'password',
                     'database' => 'database',
                 ],
-                'name' => 'name',
                 'outputTable' => 'outputFile',
                 'table' => [
                     'schema' => 'schema',
@@ -79,7 +76,6 @@ class ConfigTest extends TestCase
         $this->assertEquals('hostname', $config->getHost());
         $this->assertEquals('username', $config->getUser());
         $this->assertEquals('password', $config->getPassword());
-        $this->assertEquals('name', $config->getName());
         $this->assertNull($config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
         $this->assertEquals('schema', $config->getSchema());
@@ -97,7 +93,6 @@ class ConfigTest extends TestCase
                     '#password' => 'password',
                     'database' => 'database',
                 ],
-                'name' => 'name',
                 'outputTable' => 'outputFile',
                 'table' => [
                     'schema' => 'schema',
@@ -118,7 +113,6 @@ class ConfigTest extends TestCase
         $this->assertEquals('hostname', $config->getHost());
         $this->assertEquals('username', $config->getUser());
         $this->assertEquals('password', $config->getPassword());
-        $this->assertEquals('name', $config->getName());
         $this->assertNull($config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
         $this->assertEquals('schema', $config->getSchema());

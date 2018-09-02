@@ -1,6 +1,5 @@
 {
   "parameters": {
-    "name": "test_2",
     "query": "SELECT COUNT(*) AS \"count\", \"column2\" FROM \"ex_teradata_test\".\"test_2\" GROUP BY \"column2\"",
     "outputTable": "out.c-main.test-2",
     "incremental": false,

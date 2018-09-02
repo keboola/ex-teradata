@@ -23,11 +23,6 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'db', '#password']);
     }
 
-    public function getName(): string
-    {
-        return $this->getValue(['parameters', 'name']);
-    }
-
     public function getOutputTable(): string
     {
         return $this->getValue(['parameters', 'outputTable']);

@@ -1,6 +1,5 @@
 {
   "parameters": {
-    "name": "test_1",
     "outputTable": "out.c-main.test-1",
     "incremental": false,
     "primaryKey": null,

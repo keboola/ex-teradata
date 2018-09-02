@@ -323,7 +323,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted table: "test_1".' . PHP_EOL,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );
@@ -475,7 +475,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted table: "test_1".' . PHP_EOL,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );
@@ -513,7 +513,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
             0,
-            'Extracted table: "test_2".' . PHP_EOL,
+            'Extracted table into: "out.c-main.test-2".' . PHP_EOL,
             null,
             $testDirectory . '/expected/data/out'
         );

@@ -52,7 +52,7 @@ class Component extends BaseComponent
 
         $extractor->extractTable($query, $outputCsvFilePath);
 
-        $this->getLogger()->info(sprintf('Extracted table: "%s".', $config->getName()));
+        $this->getLogger()->info(sprintf('Extracted table into: "%s".', $config->getOutputTable()));
     }
 
     protected function getConfigClass(): string
