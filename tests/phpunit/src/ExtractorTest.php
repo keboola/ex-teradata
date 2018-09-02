@@ -84,10 +84,22 @@ class ExtractorTest extends MockeryTestCase
 
     public function testExtractTableFetchFailsOnUnhandledExceptionThrowRuntimeException(): void
     {
+        $csvWriterMock = \Mockery::mock(CsvWriter::class);
+        $csvWriterMock->shouldReceive('writeRow')
+            ->once()
+            ->with(['column1', 'column2'])
+            ->andReturnNull();
+
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
-            ->andReturn(\Mockery::mock(CsvWriter::class));
+            ->andReturn($csvWriterMock);
+
+        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock->shouldReceive('getColumnNames')
+            ->once()
+            ->withNoArgs()
+            ->andReturn(['column1', 'column2']);
 
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
@@ -97,6 +109,10 @@ class ExtractorTest extends MockeryTestCase
                 \InvalidArgumentException::class,
                 'Invalid argument message.'
             );
+        $resultMock->shouldReceive('getInfo')
+            ->once()
+            ->withNoArgs()
+            ->andReturn($getInfoResultMock);
 
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
@@ -118,21 +134,30 @@ class ExtractorTest extends MockeryTestCase
         );
     }
 
-    public function testExtractTableWithNoColumnsThrowsUserException(): void
+    public function testExtractTableWithEmptyResultSuccessfully(): void
     {
-        $rowMock = \Mockery::mock(Row::class);
-        $rowMock->shouldReceive('toArray')
+        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock->shouldReceive('getColumnNames')
             ->once()
             ->withNoArgs()
-            ->andReturn([]);
+            ->andReturn(['column1', 'column2']);
 
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
-            ->andReturn($rowMock);
+            ->andReturn([]);
+        $resultMock->shouldReceive('getInfo')
+            ->once()
+            ->withNoArgs()
+            ->andReturn($getInfoResultMock);
 
         $csvWriterMock = \Mockery::mock(CsvWriter::class);
+        $csvWriterMock->shouldReceive('writeRow')
+            ->once()
+            ->with(['column1', 'column2'])
+            ->andReturnNull();
+
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
@@ -142,37 +167,6 @@ class ExtractorTest extends MockeryTestCase
             ->once()
             ->with("SELECT * FROM database_name.table")
             ->andReturn($resultMock);
-
-        $this->expectException(\Throwable::class);
-        $this->expectExceptionMessage('Table has no columns.');
-
-        $this->extractor->extractTable(
-            'SELECT * FROM database_name.table',
-            'table.csv'
-        );
-    }
-
-    public function testExtractTableWithEmptyResultThrowsUserException(): void
-    {
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('fetch')
-            ->once()
-            ->withNoArgs()
-            ->andReturn([]);
-
-        $csvWriterMock = \Mockery::mock(CsvWriter::class);
-        $this->csvWriterFactoryMock->shouldReceive('create')
-            ->once()
-            ->withAnyArgs()
-            ->andReturn($csvWriterMock);
-
-        $this->connectionMock->shouldReceive('nativeQuery')
-            ->once()
-            ->with("SELECT * FROM database_name.table")
-            ->andReturn($resultMock);
-
-        $this->expectException(\Throwable::class);
-        $this->expectExceptionMessage('Empty export');
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
@@ -192,6 +186,13 @@ class ExtractorTest extends MockeryTestCase
                 'column2' => 2,
             ]),
         ];
+
+        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock->shouldReceive('getColumnNames')
+            ->once()
+            ->withNoArgs()
+            ->andReturn(['column1', 'column2']);
+
         $resultMock = \Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->times(3)
@@ -201,6 +202,10 @@ class ExtractorTest extends MockeryTestCase
                 next($rows);
                 return $row;
             });
+        $resultMock->shouldReceive('getInfo')
+            ->once()
+            ->withNoArgs()
+            ->andReturn($getInfoResultMock);
 
         $csvWriterMock = \Mockery::spy(CsvWriter::class);
         $csvWriterMock->shouldReceive('writeRow')

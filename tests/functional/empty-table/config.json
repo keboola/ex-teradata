@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "outputTable": "out.c-main.test-1",
+    "incremental": false,
+    "primaryKey": null,
+    "table": {
+      "schema": "ex_teradata_test",
+      "tableName": "test_1"
+    }
+  }
+}

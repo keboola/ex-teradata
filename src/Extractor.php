@@ -39,23 +39,10 @@ class Extractor
         }
 
         $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
-        $counter = 0;
+        $csvWriter->writeRow($queryResult->getInfo()->getColumnNames());
 
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {
-            if ($counter === 0) {
-                $columns = array_keys($tableRow->toArray());
-                if (empty($columns)) {
-                    throw new UserException('Table has no columns.');
-                }
-                $csvWriter->writeRow($columns);
-            }
-
             $csvWriter->writeRow($tableRow->toArray());
-            $counter++;
-        }
-
-        if ($counter === 0) {
-            throw new \Exception('Empty export');
         }
     }
 

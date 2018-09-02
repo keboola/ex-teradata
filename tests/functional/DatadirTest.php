@@ -612,7 +612,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testExtractEmptyTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
+        $testDirectory = __DIR__ . '/empty-table';
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
@@ -630,18 +630,14 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
-            1,
+            0,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
-            'Table \'invalid_table\' does not exist in database \'ex_teradata_test\'.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['table'] = [
-            'schema' => 'ex_teradata_test',
-            'tableName' => 'invalid_table',
-        ];
 
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
