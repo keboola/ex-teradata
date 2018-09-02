@@ -6,15 +6,34 @@
 
 Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 
-# Usage
+# Configuration
 
-The following parameters are required:
+## Options
 
-- `host` - IP address or Hostname for Teradata server
-- `user` - User with correct access rights
-- `#password` - Password for given User
-- `database` - Database name
+The configuration requires a `db` node with the following properties: 
 
+- `host` - string (required): IP address or Hostname for Teradata server
+- `user` - string (required): User with correct access rights
+- `#password` - string (required): Password for given User
+- `database` - string (required): Database name
+
+There are 2 possible types of table extraction.  
+1. A table defined by `schema` and `tableName`, this option can also include a columns list.
+2. A `query` which is the SQL SELECT statement to be executed to produce the result table.
+
+The extraction has the following configuration options:
+
+- `name`: string (required)
+- `query`: stirng (optional, but required if `table` not present)
+- `table`: array (optional, but required if `query` not present)
+  - `schema`: string
+  - `tableName`: string
+- `columns`: array of strings (only for `table` type configurations)
+- `outputTable`: string (required)
+- `incremental`: boolean (optional)
+- `primaryKey`: array of strings (optional)
+
+## Example
 Configuration with custom query:
 
 ```json
@@ -27,7 +46,7 @@ Configuration with custom query:
             "database": "tddatabase"
         },
         "name": "tablename",
-        "query": "SELECT COUNT(*) c, column1 FROM tddatabase.tablename GROUP BY column1"
+        "query": "SELECT COUNT(*) c, column1 FROM tddatabase.tablename GROUP BY column1",
         "outputTable": "out.c-main.tablename",
         "incremental": false,
         "primaryKey": null
@@ -85,13 +104,13 @@ Configuration with defined columns:
 }
 ```
 
-## Development
+# Development
  
 Clone this repository and init the workspace with following command:
 
 ```
 git clone https://github.com/keboola/ex-teradata
-cd my-component
+cd ex-teradata
 docker-compose build
 docker-compose run --rm dev composer install --no-scripts
 ```
@@ -104,11 +123,14 @@ TERADATA_PASSWORD=
 TERADATA_DATABASE=ex_teradata_test
 ```
 
-Run the test suite using this command:
+## Tools
 
-```
-docker-compose run --rm dev composer tests
-```
+- Tests: `docker-compose run --rm dev composer tests`
+  - Unit tests: `docker-compose run --rm dev composer tests-phpunit`
+  - Datadir tests: `docker-compose run --rm dev composer tests-datadir`
+- Code sniffer: `docker-compose run --rm dev composer phpcs`
+- Static analysis: `docker-compose run --rm dev composer phpstan`
+
  
 # Integration
 
