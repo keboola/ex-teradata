@@ -21,3 +21,6 @@ services:
       - TERADATA_USERNAME
       - TERADATA_PASSWORD
       - TERADATA_DATABASE
+      - CC_TEST_REPORTER_ID
+      - GIT_COMMIT_SHA
+      - GIT_BRANCH
