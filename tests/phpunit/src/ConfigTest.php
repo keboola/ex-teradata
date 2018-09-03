@@ -32,6 +32,8 @@ class ConfigTest extends TestCase
                 ],
                 'query' => 'SELECT a FROM b',
                 'outputTable' => 'outputFile',
+                'incremental' => false,
+                'primaryKey' => [],
             ],
         ];
 
@@ -45,6 +47,8 @@ class ConfigTest extends TestCase
         $this->assertEquals('password', $config->getPassword());
         $this->assertEquals('SELECT a FROM b', $config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
+        $this->assertFalse($config->getIncremental());
+        $this->assertEmpty($config->getPrimaryKey());
         $this->assertNull($config->getSchema());
         $this->assertNull($config->getTableName());
         $this->assertEmpty($config->getColumns());
@@ -61,6 +65,8 @@ class ConfigTest extends TestCase
                     'database' => 'database',
                 ],
                 'outputTable' => 'outputFile',
+                'incremental' => true,
+                'primaryKey' => ['column1'],
                 'table' => [
                     'schema' => 'schema',
                     'tableName' => 'tableName',
@@ -78,6 +84,9 @@ class ConfigTest extends TestCase
         $this->assertEquals('password', $config->getPassword());
         $this->assertNull($config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
+        $this->assertTrue($config->getIncremental());
+        $this->assertCount(1, $config->getPrimaryKey());
+        $this->assertEquals('column1', $config->getPrimaryKey()[0]);
         $this->assertEquals('schema', $config->getSchema());
         $this->assertEquals('tableName', $config->getTableName());
         $this->assertEmpty($config->getColumns());
@@ -94,6 +103,11 @@ class ConfigTest extends TestCase
                     'database' => 'database',
                 ],
                 'outputTable' => 'outputFile',
+                'incremental' => false,
+                'primaryKey' => [
+                    'column1',
+                    'column2',
+                ],
                 'table' => [
                     'schema' => 'schema',
                     'tableName' => 'tableName',
@@ -115,6 +129,10 @@ class ConfigTest extends TestCase
         $this->assertEquals('password', $config->getPassword());
         $this->assertNull($config->getQuery());
         $this->assertEquals('outputFile', $config->getOutputTable());
+        $this->assertFalse($config->getIncremental());
+        $this->assertCount(2, $config->getPrimaryKey());
+        $this->assertEquals('column1', $config->getPrimaryKey()[0]);
+        $this->assertEquals('column2', $config->getPrimaryKey()[1]);
         $this->assertEquals('schema', $config->getSchema());
         $this->assertEquals('tableName', $config->getTableName());
 

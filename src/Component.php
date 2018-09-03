@@ -52,6 +52,13 @@ class Component extends BaseComponent
 
         $extractor->extractTable($query, $outputCsvFilePath);
 
+        $manifestFileName = $outputCsvFilePath . '.manifest';
+        $manifestData = [
+            'incremental' => $config->getIncremental(),
+            'primary_key' => $config->getPrimaryKey(),
+        ];
+        file_put_contents($manifestFileName, json_encode($manifestData, JSON_PRETTY_PRINT));
+
         $this->getLogger()->info(sprintf('Extracted table into: "%s".', $config->getOutputTable()));
     }
 

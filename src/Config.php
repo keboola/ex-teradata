@@ -59,4 +59,14 @@ class Config extends BaseConfig
     {
         return $this->getValue(['parameters', 'columns']);
     }
+
+    public function getIncremental(): bool
+    {
+        return $this->getValue(['parameters', 'incremental']);
+    }
+
+    public function getPrimaryKey(): array
+    {
+        return $this->getValue(['parameters', 'primaryKey']);
+    }
 }
