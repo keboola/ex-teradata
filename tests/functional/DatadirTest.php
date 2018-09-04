@@ -7,7 +7,7 @@ namespace Keboola\ExTeradata\Tests\Functional;
 use Dibi\Connection;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Keboola\DatadirTests\DatadirTestSpecification;
-use Keboola\ExTeradata\ConnectionFactory;
+use Keboola\ExTeradata\Factories\ConnectionFactory;
 
 class DatadirTest extends AbstractDatadirTestCase
 {

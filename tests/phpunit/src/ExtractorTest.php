@@ -11,7 +11,7 @@ use Dibi\Result;
 use Dibi\Row;
 use Keboola\Component\UserException;
 use Keboola\Csv\CsvWriter;
-use Keboola\ExTeradata\CsvWriterFactory;
+use Keboola\ExTeradata\Factories\CsvWriterFactory;
 use Keboola\ExTeradata\ExceptionHandler;
 use Keboola\ExTeradata\Extractor;
 use Mockery\Adapter\Phpunit\MockeryTestCase;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\ExTeradata;
+namespace Keboola\ExTeradata\Factories;
 
 use Keboola\Csv\CsvWriter;
 

@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata;
 
-use Dibi\Connection;
 use Keboola\Component\BaseComponent;
+use Keboola\ExTeradata\Config\CoreComponent\Config;
+use Keboola\ExTeradata\Config\CoreComponent\ConfigDefinition;
+use Keboola\ExTeradata\Factories\ConnectionFactory;
+use Keboola\ExTeradata\Factories\CsvWriterFactory;
 
-class Component extends BaseComponent
+class CoreComponent extends BaseComponent
 {
-    private function testConnection(Connection $connection): void
-    {
-        $connection->query("SELECT NOW()");
-    }
-
     public function run(): void
     {
         /** @var Config $config */
@@ -29,12 +27,6 @@ class Component extends BaseComponent
             );
         } catch (\Throwable $exception) {
             throw $exceptionHandler->createException($exception);
-        }
-
-
-        if ($config->getAction() === 'testConnection') {
-            $this->testConnection($connection);
-            exit(0);
         }
 
         $extractorHelper = new ExtractorHelper();

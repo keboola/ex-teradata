@@ -7,7 +7,7 @@ namespace Keboola\ExTeradata;
 use Dibi\Connection;
 use Dibi\Result;
 use Dibi\Row;
-use Keboola\Component\UserException;
+use Keboola\ExTeradata\Factories\CsvWriterFactory;
 
 class Extractor
 {
