@@ -19,6 +19,11 @@ class Component extends BaseComponent
         ]);
     }
 
+    private function testConnection(Connection $connection): void
+    {
+        $connection->query("SELECT NOW()");
+    }
+
     public function run(): void
     {
         /** @var Config $config */
@@ -34,6 +39,12 @@ class Component extends BaseComponent
             );
         } catch (\Throwable $exception) {
             throw $exceptionHandler->createException($exception);
+        }
+
+
+        if ($config->getAction() === 'testConnection') {
+            $this->testConnection($connection);
+            exit(0);
         }
 
         $extractorHelper = new ExtractorHelper();
