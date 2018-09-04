@@ -9,16 +9,6 @@ use Keboola\Component\BaseComponent;
 
 class Component extends BaseComponent
 {
-    private function createConnection(string $host, string $user, string $password): Connection
-    {
-        return new Connection([
-            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s', $host),
-            'driver'   => 'odbc',
-            'username' => $user,
-            'password' => $password,
-        ]);
-    }
-
     private function testConnection(Connection $connection): void
     {
         $connection->query("SELECT NOW()");
@@ -32,7 +22,7 @@ class Component extends BaseComponent
         $exceptionHandler = new ExceptionHandler();
 
         try {
-            $connection = $this->createConnection(
+            $connection = (new ConnectionFactory())->create(
                 $config->getHost(),
                 $config->getUser(),
                 $config->getPassword()
