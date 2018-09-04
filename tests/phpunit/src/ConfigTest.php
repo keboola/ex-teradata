@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Tests\Unit;
 
-use Keboola\ExTeradata\Config;
-use Keboola\ExTeradata\ConfigDefinition;
+use Keboola\ExTeradata\Config\CoreComponent\Config;
+use Keboola\ExTeradata\Config\CoreComponent\ConfigDefinition;
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase

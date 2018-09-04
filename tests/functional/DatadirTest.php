@@ -7,19 +7,10 @@ namespace Keboola\ExTeradata\Tests\Functional;
 use Dibi\Connection;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Keboola\DatadirTests\DatadirTestSpecification;
+use Keboola\ExTeradata\Factories\ConnectionFactory;
 
 class DatadirTest extends AbstractDatadirTestCase
 {
-    private function createConnection(string $host, string $user, string $password): Connection
-    {
-        return new Connection([
-            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s', $host),
-            'driver'   => 'odbc',
-            'username' => $user,
-            'password' => $password,
-        ]);
-    }
-
     private function getCredentials(): array
     {
         $requiredCredentials = ['TERADATA_HOST', 'TERADATA_USERNAME', 'TERADATA_PASSWORD', 'TERADATA_DATABASE'];
@@ -45,7 +36,7 @@ class DatadirTest extends AbstractDatadirTestCase
         parent::tearDown();
 
         $credentials = $this->getCredentials();
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -116,7 +107,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -154,7 +145,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -192,7 +183,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -230,7 +221,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -266,7 +257,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -308,7 +299,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -345,7 +336,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -383,7 +374,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -421,7 +412,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -460,7 +451,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -497,7 +488,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -535,7 +526,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -574,7 +565,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
@@ -617,7 +608,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = $this->createConnection(
+        $connection = (new ConnectionFactory())->create(
             $credentials['host'],
             $credentials['user'],
             $credentials['#password']
