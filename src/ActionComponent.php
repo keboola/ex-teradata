@@ -30,7 +30,7 @@ class ActionComponent extends BaseComponent
 
         switch ($config->getAction()) {
             case 'testConnection':
-                $connection->query("SELECT NOW()");
+                $connection->query("SELECT 1");
                 break;
         }
     }
