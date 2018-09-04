@@ -31,7 +31,7 @@ class ActionComponent extends BaseComponent
         switch ($config->getAction()) {
             case 'testConnection':
                 $connection->query("SELECT 1");
-                print json_encode([], JSON_PRETTY_PRINT);
+                print json_encode(['success' => 'ok'], JSON_PRETTY_PRINT);
                 break;
         }
     }
