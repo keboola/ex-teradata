@@ -16,11 +16,11 @@ try {
     $action = json_decode((string) $configJson, true)['action'] ?? 'run';
 
     switch ($action) {
-        case 'testConnection':
-            $app = new ActionComponent($logger);
+        case 'run':
+            $app = new CoreComponent($logger);
             break;
         default:
-            $app = new CoreComponent($logger);
+            $app = new ActionComponent($logger);
     }
     $app->run();
     exit(0);
