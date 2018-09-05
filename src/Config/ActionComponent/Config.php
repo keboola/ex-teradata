@@ -22,4 +22,9 @@ class Config extends BaseConfig
     {
         return $this->getValue(['parameters', 'db', '#password']);
     }
+
+    public function getDatabase(): string
+    {
+        return $this->getValue(['parameters', 'db', 'database']);
+    }
 }
