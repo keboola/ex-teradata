@@ -34,12 +34,12 @@ class ActionComponent extends BaseComponent
         switch ($config->getAction()) {
             case 'testConnection':
                 $this->testConnection($connection);
-                print json_encode(['status' => 'ok'], JSON_PRETTY_PRINT);
+                print json_encode(['status' => 'success'], JSON_PRETTY_PRINT);
                 break;
             case 'getTables':
                 print json_encode(
                     [
-                        'status' => 'ok',
+                        'status' => 'success',
                         'tables' => $this->getTables($connection, $config->getDatabase()),
                     ],
                     JSON_PRETTY_PRINT
