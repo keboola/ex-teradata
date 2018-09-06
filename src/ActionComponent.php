@@ -14,11 +14,15 @@ use Keboola\ExTeradata\Response\Table;
 
 class ActionComponent extends BaseComponent
 {
+    /** @var ExtractorHelper */
+    private $extractorHelper;
+
     public function run(): void
     {
         /** @var Config $config */
         $config = $this->getConfig();
 
+        $this->extractorHelper = new ExtractorHelper();
         $exceptionHandler = new ExceptionHandler();
 
         try {
@@ -65,6 +69,7 @@ class ActionComponent extends BaseComponent
 
     private function getTables(Connection $connection, string $database): array
     {
+        $this->extractorHelper->validateObject($database);
         $tables = $connection->query("SELECT * FROM dbc.tables WHERE DatabaseName='{$database}'")->fetchAll();
         $columns = $connection->query("SELECT * FROM dbc.columns WHERE DatabaseName='{$database}'")->fetchAll();
 
