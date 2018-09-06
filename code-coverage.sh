@@ -7,5 +7,5 @@ curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-lin
 chmod +x ./cc-test-reporter
 
 ./cc-test-reporter before-build
-./vendor/bin/phpunit --whitelist src --coverage-clover clover.xml
+./vendor/bin/phpunit --coverage-clover clover.xml
 ./cc-test-reporter after-build -t clover --debug

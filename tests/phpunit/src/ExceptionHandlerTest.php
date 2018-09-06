@@ -7,9 +7,9 @@ namespace Keboola\ExTeradata\Tests\Unit;
 use Dibi\DriverException;
 use Keboola\Component\UserException;
 use Keboola\ExTeradata\ExceptionHandler;
-use Mockery\Adapter\Phpunit\MockeryTestCase;
+use PHPUnit\Framework\TestCase;
 
-class ExceptionHandlerTest extends MockeryTestCase
+class ExceptionHandlerTest extends TestCase
 {
     /** @var ExceptionHandler */
     private $exceptionHandler;
