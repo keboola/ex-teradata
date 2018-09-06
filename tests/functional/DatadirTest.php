@@ -44,8 +44,17 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $database = 'ex_teradata_test';
 
-        $connection->query('DELETE DATABASE ' . $database);
-        $connection->query('DROP DATABASE ' . $database);
+        try {
+            $connection->query('DELETE DATABASE ' . $database);
+            $connection->query('DROP DATABASE ' . $database);
+        } catch (\Throwable $exception) {
+            if (!preg_match(
+                '~Database \'(.+)\' does not exist. S0002~',
+                $exception->getMessage()
+            )) {
+                throw $exception;
+            }
+        }
     }
 
     private function createDatabase(Connection $connection, string $database): void
@@ -100,7 +109,7 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    public function testInvalidHostname(): void
+    public function testInvalidHost(): void
     {
         $testDirectory = __DIR__ . '/empty-data';
 

@@ -11,6 +11,26 @@ class ExceptionHandler
     public function createException(\Throwable $exception): \Throwable
     {
         if (preg_match(
+            '~Can\'t assign requested address 08S01~',
+            $exception->getMessage()
+        )) {
+            return new UserException('Cannot assign requested address.');
+        } elseif (preg_match(
+            '~Network is unreachable 08S01~',
+            $exception->getMessage()
+        )) {
+            return new UserException('Network is unreachable.');
+        } elseif (preg_match(
+            '~The Teradata server is not accepting connections 08004~',
+            $exception->getMessage()
+        )) {
+            return new UserException('The Teradata server is not accepting connections.');
+        } elseif (preg_match(
+            '~No response received when attempting to connect to the Teradata server S1000~',
+            $exception->getMessage()
+        )) {
+            return new UserException('No response received when attempting to connect to the Teradata server.');
+        } elseif (preg_match(
             '~The Teradata server can\'t currently be reached over this network~',
             $exception->getMessage()
         )) {

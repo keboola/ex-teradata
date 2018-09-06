@@ -21,6 +21,69 @@ class ExceptionHandlerTest extends MockeryTestCase
         $this->exceptionHandler = new ExceptionHandler();
     }
 
+    public function testExceptionHandlerUnreachableNetwork(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                'unixODBC][Teradata][WSock32 DLL] (424) WSA E NetUnreach: Network is unreachable 08S01'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Network is unreachable.',
+            $exception->getMessage()
+        );
+    }
+
+    public function testExceptionHandlerServerNotAcceptingConnections(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[unixODBC][Teradata][WSock32 DLL] (435) WSA E ConnRefused:'
+                . ' The Teradata server is not accepting connections 08004'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'The Teradata server is not accepting connections.',
+            $exception->getMessage()
+        );
+    }
+
+    public function testExceptionHandlerNoResponseFromServer(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[unixODBC][Teradata][WSock32 DLL] (434) WSA E TimedOut: No response'
+                . ' received when attempting to connect to the Teradata server S1000'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'No response received when attempting to connect to the Teradata server.',
+            $exception->getMessage()
+        );
+    }
+
+    public function testExceptionHandlerCannotAssignRequestAddress(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[unixODBC][Teradata][WSock32 DLL] (422) WSA E AddrNotAvail:'
+                . ' Can\'t assign requested address 08S01'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Cannot assign requested address.',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerInvalidHostThrowUserException(): void
     {
         $exception = $this->exceptionHandler->createException(
