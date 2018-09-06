@@ -116,10 +116,10 @@ docker-compose run --rm dev composer install --no-scripts
 
 Create `.env` file:
 ```
-TERADATA_HOST=35.158.41.16
-TERADATA_USERNAME=dbc
-TERADATA_PASSWORD=
-TERADATA_DATABASE=ex_teradata_test
+TERADATA_HOST=100.200.30.40
+TERADATA_USERNAME=user
+TERADATA_PASSWORD=password
+TERADATA_DATABASE=database_name
 ```
 
 ## Tools
