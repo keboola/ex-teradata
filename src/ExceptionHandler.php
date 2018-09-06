@@ -41,7 +41,7 @@ class ExceptionHandler
         )) {
             return new UserException('The User or Password is invalid.');
         } elseif (preg_match(
-            '~Object \'(.+)\.(.+)\' does not exist.~',
+            '~Object \'([^\']+)\.([^\']+)\' does not exist.~',
             $exception->getMessage(),
             $matches
         )) {
@@ -51,7 +51,7 @@ class ExceptionHandler
                 $matches[1]
             ));
         } elseif (preg_match(
-            '~Database \'(.+)\' does not exist.~',
+            '~Database \'([^\']+)\' does not exist.~',
             $exception->getMessage(),
             $matches
         )) {
