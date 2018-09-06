@@ -46,7 +46,7 @@ class ExceptionHandler
             $matches
         )) {
             return new UserException(sprintf(
-                'Table \'%s\' does not exist in database \'%s\'.',
+                'Table "%s" does not exist in database "%s".',
                 $matches[2],
                 $matches[1]
             ));
@@ -56,7 +56,7 @@ class ExceptionHandler
             $matches
         )) {
             return new UserException(sprintf(
-                'Database \'%s\' does not exist.',
+                'Database "%s" does not exist.',
                 $matches[1]
             ));
         }

@@ -54,7 +54,7 @@ class ExtractorTest extends MockeryTestCase
             );
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Database \'database_name\' does not exist.');
+        $this->expectExceptionMessage('Database "database_name" does not exist.');
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
@@ -74,7 +74,7 @@ class ExtractorTest extends MockeryTestCase
             );
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Table \'table\' does not exist in database \'database_name\'.');
+        $this->expectExceptionMessage('Table "table" does not exist in database "database_name".');
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',

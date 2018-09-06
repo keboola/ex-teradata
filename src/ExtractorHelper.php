@@ -11,7 +11,7 @@ class ExtractorHelper
     public function validateObject(string $object): void
     {
         if (strpos($object, '"') !== false) {
-            throw new UserException(sprintf('Object \'%s\' contain restricted character \'"\'.', $object));
+            throw new UserException(sprintf('Object "%s" contain restricted character \'"\'.', $object));
         }
     }
 

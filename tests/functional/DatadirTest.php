@@ -361,7 +361,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Object \'database"_name\' contain restricted character \'"\'.' . PHP_EOL,
+            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -399,7 +399,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Object \'te"st_1\' contain restricted character \'"\'.' . PHP_EOL,
+            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -437,7 +437,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Object \'col"umn1\' contain restricted character \'"\'.' . PHP_EOL,
+            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -551,7 +551,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Database \'invalid_database\' does not exist.' . PHP_EOL,
+            'Database "invalid_database" does not exist.' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
@@ -590,7 +590,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $testDirectory . '/source/data',
             1,
             null,
-            'Table \'invalid_table\' does not exist in database \'ex_teradata_test\'.' . PHP_EOL,
+            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL,
             $testDirectory . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);

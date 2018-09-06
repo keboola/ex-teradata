@@ -123,7 +123,7 @@ class ExceptionHandlerTest extends TestCase
         );
 
         $this->assertInstanceOf(UserException::class, $exception);
-        $this->assertEquals('Database \'invalid_database_name\' does not exist.', $exception->getMessage());
+        $this->assertEquals('Database "invalid_database_name" does not exist.', $exception->getMessage());
     }
 
     public function testExceptionHandlerNotExistingTableThrowUserException(): void
@@ -137,7 +137,7 @@ class ExceptionHandlerTest extends TestCase
 
         $this->assertInstanceOf(UserException::class, $exception);
         $this->assertEquals(
-            'Table \'invalid_table_name\' does not exist in database \'database_name\'.',
+            'Table "invalid_table_name" does not exist in database "database_name".',
             $exception->getMessage()
         );
     }

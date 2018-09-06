@@ -21,7 +21,7 @@ class ExtractorHelperTest extends TestCase
     public function testValidateObjectWithIncorectStringThrowsuserException(): void
     {
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Object \'bad"object\' contain restricted character \'"\'.');
+        $this->expectExceptionMessage('Object "bad"object" contain restricted character \'"\'.');
 
         $this->extractorHelper->validateObject('bad"object');
     }
