@@ -109,7 +109,58 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    public function testInvalidHost(): void
+    public function testActionGetTables(): void
+    {
+        $testDirectory = __DIR__ . '/get-tables';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'test_1';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        $this->insertBasicData($connection, $database, $table);
+
+        $response = [
+            'status' => 'success',
+            'tables' => [
+                [
+                    'schema' => 'ex_teradata_test',
+                    'name' => 'test_1',
+                    'columns' => [
+                        ['name' => 'column1'],
+                        ['name' => 'column2'],
+                    ],
+                ],
+            ],
+        ];
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            json_encode($response, JSON_PRETTY_PRINT),
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testInvalidHostname(): void
     {
         $testDirectory = __DIR__ . '/empty-data';
 
