@@ -12,7 +12,7 @@ Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 
 The configuration requires a `db` node with the following properties: 
 
-- `host` - string (required): IP address or Hostname for Teradata server
+- `host` - string (required): IP address or Hostname of Teradata server
 - `user` - string (required): User with correct access rights
 - `#password` - string (required): Password for given User
 - `database` - string (required): Database name
@@ -23,7 +23,7 @@ There are 2 possible types of table extraction.
 
 The extraction has the following configuration options:
 
-- `query`: stirng (optional, but required if `table` not present)
+- `query`: string (optional, but required if `table` not present)
 - `table`: array (optional, but required if `query` not present)
   - `schema`: string
   - `tableName`: string
