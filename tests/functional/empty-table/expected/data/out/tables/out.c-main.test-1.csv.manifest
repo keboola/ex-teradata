@@ -1,0 +1,7 @@
+{
+  "incremental": true,
+  "primary_key": [
+    "column1",
+    "column2"
+  ]
+}

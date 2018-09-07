@@ -1,0 +1,7 @@
+FROM keboola/ex-teradata
+
+RUN pecl install xdebug
+RUN docker-php-ext-enable xdebug
+
+COPY code-coverage.sh code-coverage.sh
+RUN chmod +x code-coverage.sh

@@ -1,7 +1,31 @@
 version: '2'
 services:
   dev:
-    build: .
+    build:
+      context: .
+      args:
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_SESSION_TOKEN
+    image: keboola/ex_teradata
     volumes:
       - ./:/code
       - ./data:/data
+    environment:
+      - TERADATA_HOST
+      - TERADATA_USERNAME
+      - TERADATA_PASSWORD
+      - TERADATA_DATABASE
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile-tests
+    command: ./code-coverage.sh
+    environment:
+      - TERADATA_HOST
+      - TERADATA_USERNAME
+      - TERADATA_PASSWORD
+      - TERADATA_DATABASE
+      - CC_TEST_REPORTER_ID
+      - GIT_COMMIT_SHA
+      - GIT_BRANCH
