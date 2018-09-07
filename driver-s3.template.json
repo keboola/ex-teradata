@@ -1,5 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Teradata drivers storage and permissions",
   "Resources": {
     "DriversS3Bucket": {
       "Type": "AWS::S3::Bucket",
