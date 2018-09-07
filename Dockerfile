@@ -1,3 +1,10 @@
+FROM quay.io/keboola/aws-cli
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SESSION_TOKEN
+RUN /usr/bin/aws s3 cp s3://teradata-drivers-driverss3bucket-8b7jbdmserup/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
+
+
 FROM php:7-cli
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
@@ -20,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 RUN chmod +x /tmp/composer-install.sh \
 	&& /tmp/composer-install.sh
 
-COPY docker/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
+COPY --from=0 /tmp/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
 RUN dpkg -i /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
 
 COPY docker/odbc.ini /etc/odbc.ini
