@@ -114,12 +114,30 @@ docker-compose build
 docker-compose run --rm dev composer install --no-scripts
 ```
 
+Generate AWS credentials for drivers download:
+
+```
+docker run --rm -i \
+--volume $HOME/.aws/:/root/.aws/ \
+quay.io/keboola/aws-cli:latest sts get-session-token
+```
+
 Create `.env` file:
 ```
 TERADATA_HOST=100.200.30.40
 TERADATA_USERNAME=user
 TERADATA_PASSWORD=password
 TERADATA_DATABASE=database_name
+
+# Drivers download
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+```
+
+Build the image:
+```
+docker-compose build dev
 ```
 
 ## Tools
