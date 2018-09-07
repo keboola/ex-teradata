@@ -14,15 +14,11 @@ use Keboola\ExTeradata\Response\Table;
 
 class ActionComponent extends BaseComponent
 {
-    /** @var ExtractorHelper */
-    private $extractorHelper;
-
     public function run(): void
     {
         /** @var Config $config */
         $config = $this->getConfig();
 
-        $this->extractorHelper = new ExtractorHelper();
         $exceptionHandler = new ExceptionHandler();
 
         try {
@@ -38,16 +34,9 @@ class ActionComponent extends BaseComponent
         switch ($config->getAction()) {
             case 'testConnection':
                 $this->testConnection($connection);
-                print json_encode(['status' => 'success'], JSON_PRETTY_PRINT);
                 break;
             case 'getTables':
-                print json_encode(
-                    [
-                        'status' => 'success',
-                        'tables' => $this->getTables($connection, $config->getDatabase()),
-                    ],
-                    JSON_PRETTY_PRINT
-                );
+                $this->getTables($connection, $config->getDatabase());
                 break;
         }
     }
@@ -65,27 +54,38 @@ class ActionComponent extends BaseComponent
     private function testConnection(Connection $connection): void
     {
         $connection->query("SELECT 1");
+        print json_encode(['status' => 'success'], JSON_PRETTY_PRINT);
     }
 
-    private function getTables(Connection $connection, string $database): array
+    private function getTables(Connection $connection, string $database): void
     {
-        $this->extractorHelper->validateObject($database);
-        $tables = $connection->query("SELECT * FROM dbc.tables WHERE DatabaseName='{$database}'")->fetchAll();
-        $columns = $connection->query("SELECT * FROM dbc.columns WHERE DatabaseName='{$database}'")->fetchAll();
+        print json_encode(
+            [
+                'status' => 'success',
+                'tables' => $this->getTablesResponse($connection, $database),
+            ],
+            JSON_PRETTY_PRINT
+        );
+    }
 
-        $tableReseponse = [];
+    private function getTablesResponse(Connection $connection, string $database): array
+    {
+        $tables = $connection->query("SELECT * FROM dbc.tables WHERE DatabaseName=?", $database)->fetchAll();
+        $columns = $connection->query("SELECT * FROM dbc.columns WHERE DatabaseName=?", $database)->fetchAll();
+
+        $tableResponse = [];
         foreach ($tables as $table) {
-            $tableReseponse[] = new Table(
+            $tableResponse[] = new Table(
                 trim($table['DatabaseName']),
                 trim($table['TableName']),
-                $this->getTableColumns(trim($table['TableName']), $columns)
+                $this->getTableColumnsResponse(trim($table['TableName']), $columns)
             );
         }
 
-        return $tableReseponse;
+        return $tableResponse;
     }
 
-    private function getTableColumns(string $table, array $columns): array
+    private function getTableColumnsResponse(string $table, array $columns): array
     {
         $columnsResponse = [];
         foreach ($columns as $column) {
