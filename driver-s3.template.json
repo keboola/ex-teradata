@@ -1,0 +1,73 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Teradata drivers storage and permissions",
+  "Resources": {
+    "DriversS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "DriversDownloadPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Teradata Drivers Download",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:ListBucket",
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DriversS3Bucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DriversS3Bucket"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "DriversDownloadGroup": {
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "ManagedPolicyArns": [
+          {
+            "Ref": "DriversDownloadPolicy"
+          }
+        ]
+      }
+    }
+  }
+}

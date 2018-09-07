@@ -9,8 +9,8 @@ before_script:
   - export APP_IMAGE=keboola/ex-teradata
   - export APP_IMAGE_TEST=keboola/ex-teradata-test
   - docker -v
-  - docker build -t $APP_IMAGE .
-  - docker build -t $APP_IMAGE_TEST -f Dockerfile-tests .
+  - docker build -t $APP_IMAGE --build-arg AWS_SECRET_ACCESS_KEY --build-arg AWS_ACCESS_KEY_ID .
+  - docker build -t $APP_IMAGE_TEST -f Dockerfile-tests --build-arg AWS_SECRET_ACCESS_KEY --build-arg AWS_ACCESS_KEY_ID .
 
   - docker run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE $APP_IMAGE composer ci
   - docker run -e TERADATA_HOST -e TERADATA_USERNAME -e TERADATA_PASSWORD -e TERADATA_DATABASE -e CC_TEST_REPORTER_ID -e GIT_COMMIT_SHA=$TRAVIS_COMMIT -e GIT_BRANCH=$TRAVIS_BRANCH $APP_IMAGE_TEST /code/code-coverage.sh
