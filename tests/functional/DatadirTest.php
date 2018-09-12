@@ -698,4 +698,33 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
+
+    public function testExtractTableWithByteColumn(): void
+    {
+        $testDirectory = __DIR__ . '/basic-data-byte-column';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            1,
+            null,
+            'You are probably trying to export one or more columns with data type "byte"'
+            . ' which is not allowed.' . PHP_EOL,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $credentials['database'] = 'DBC';
+        $configuration['parameters']['db'] = $credentials;
+
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
 }

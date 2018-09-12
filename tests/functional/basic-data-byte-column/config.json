@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "outputTable": "out.c-main.test-1",
+    "incremental": false,
+    "primaryKey": [],
+    "table": {
+      "schema": "DBC",
+      "tableName": "SessionInfo"
+    },
+    "columns": [
+      "UserName",
+      "AccountName",
+      "LogonSequenceNo"
+    ]
+  }
+}
