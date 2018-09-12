@@ -142,6 +142,19 @@ class ExceptionHandlerTest extends TestCase
         );
     }
 
+    public function testExceptionHandlerExportingBytesThrowUserException(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new \ErrorException('A non-numeric value encountered {}')
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'You are probably trying to export one or more columns with data type "byte" which is not allowed.',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerRuntimeExceptionIsPassedAbove(): void
     {
         $exception = $this->exceptionHandler->createException(new \RuntimeException('Some exception'));
