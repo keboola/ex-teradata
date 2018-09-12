@@ -46,6 +46,10 @@ class ExceptionHandler
                 'Database "%s" does not exist.',
                 [1]
             ),
+            new MessageTransformation(
+                '~A non-numeric value encountered~',
+                'You are probably trying to export one or more columns with data type "byte" which is not allowed.'
+            )
         ];
     }
 
