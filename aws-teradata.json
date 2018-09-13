@@ -16,20 +16,6 @@
         },
         "yes"
       ]
-    },
-    "DBUseLocalStorage": {
-      "Fn::Equals": [
-        "LocalStorage",
-        {
-          "Fn::FindInMap": [
-            "DBInstanceStorageTypes",
-            {
-              "Ref": "DBInstanceStorageType"
-            },
-            "LaunchConfig"
-          ]
-        }
-      ]
     }
   },
   "Description": "MPP Teradata Database",
@@ -83,22 +69,10 @@
     },
     "DBInstanceStorageTypes": {
       "d2.xlarge---HDD-6TB": {
-        "DefaultVolumeCount": 3,
-        "InstanceType": "d2.xlarge",
-        "LaunchConfig": "LocalStorage",
-        "LaunchConfig2": "LocalStorage",
-        "LaunchConfig4": "LocalStorage",
-        "VolumeCountUnfold2": 3,
-        "VolumeCountUnfold4": 3
+        "InstanceType": "d2.xlarge"
       },
       "i2.2xlarge--SSD-1.6TB": {
-        "DefaultVolumeCount": 2,
-        "InstanceType": "i2.2xlarge",
-        "LaunchConfig": "LocalStorage",
-        "LaunchConfig2": "LocalStorage",
-        "LaunchConfig4": "LocalStorage",
-        "VolumeCountUnfold2": 2,
-        "VolumeCountUnfold4": 2
+        "InstanceType": "i2.2xlarge"
       }
     }
   },
