@@ -110,34 +110,30 @@ Clone this repository and init the workspace with following command:
 ```
 git clone https://github.com/keboola/ex-teradata
 cd ex-teradata
-docker-compose build
-docker-compose run --rm dev composer install --no-scripts
-```
-
-Generate AWS credentials for drivers download:
 
 ```
-docker run --rm -i \
---volume $HOME/.aws/:/root/.aws/ \
-quay.io/keboola/aws-cli:latest sts get-session-token
+
+Generate `.env` file with AWS credentials for drivers download:
+
+```
+docker run --rm -it \
+--volume $HOME/.aws/:/root/.aws/ --volume $(pwd):/code --entrypoint '' \
+quay.io/keboola/aws-cli:latest sh -c "aws sts get-session-token | jq --raw-output '\"AWS_ACCESS_KEY_ID=\" + .Credentials.AccessKeyId + \"\nAWS_SECRET_ACCESS_KEY=\" + .Credentials.SecretAccessKey + \"\nAWS_SESSION_TOKEN=\" + .Credentials.SessionToken' > /code/.env"
 ```
 
-Create `.env` file:
+Append to `.env` file:
 ```
 TERADATA_HOST=100.200.30.40
 TERADATA_USERNAME=user
 TERADATA_PASSWORD=password
 TERADATA_DATABASE=database_name
 
-# Drivers download
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_SESSION_TOKEN=
 ```
 
 Build the image:
 ```
 docker-compose build dev
+docker-compose run --rm dev composer install --no-scripts
 ```
 
 ## Tools
