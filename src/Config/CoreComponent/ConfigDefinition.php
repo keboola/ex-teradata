@@ -20,6 +20,7 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->isRequired()
                     ->children()
                         ->scalarNode('host')->isRequired()->cannotBeEmpty()->end()
+                        ->integerNode('port')->defaultValue(1025)->end()
                         ->scalarNode('user')->isRequired()->cannotBeEmpty()->end()
                         ->scalarNode('#password')->isRequired()->cannotBeEmpty()->end()
                         ->scalarNode('database')->isRequired()->cannotBeEmpty()->end()
