@@ -13,6 +13,7 @@ services:
       - ./data:/data
     environment:
       - TERADATA_HOST
+      - TERADATA_PORT
       - TERADATA_USERNAME
       - TERADATA_PASSWORD
       - TERADATA_DATABASE
@@ -23,6 +24,7 @@ services:
     command: ./code-coverage.sh
     environment:
       - TERADATA_HOST
+      - TERADATA_PORT
       - TERADATA_USERNAME
       - TERADATA_PASSWORD
       - TERADATA_DATABASE
