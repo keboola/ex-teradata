@@ -1,8 +1,7 @@
 FROM quay.io/keboola/aws-cli
-ARG AWS_SECRET_ACCESS_KEY="du7XJecx237rydr8S17qwfJBowyg/+qeL2nKJden"
-ARG AWS_ACCESS_KEY_ID="AKIAJ3QFWEXBWSCN4D4Q"
-#ARG AWS_SESSION_TOKEN
-
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SESSION_TOKEN
 RUN /usr/bin/aws s3 cp s3://teradata-drivers-driverss3bucket-8b7jbdmserup/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
 
 
