@@ -61,7 +61,7 @@ class ConfigTest extends TestCase
             'parameters' => [
                 'db' => [
                     'host' => 'hostname',
-                    'port' => 666,
+                    'port' => 1100,
                     'user' => 'username',
                     '#password' => 'password',
                     'database' => 'database',
@@ -82,7 +82,7 @@ class ConfigTest extends TestCase
         );
 
         $this->assertEquals('hostname', $config->getHost());
-        $this->assertEquals(666, $config->getPort());
+        $this->assertEquals(1100, $config->getPort());
         $this->assertEquals('username', $config->getUser());
         $this->assertEquals('password', $config->getPassword());
         $this->assertNull($config->getQuery());
