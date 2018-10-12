@@ -30,7 +30,7 @@
     },
     "scripts": {
         "tests-phpunit": "phpunit",
-        "tests-datadir": "phpunit tests/functional",
+        "tests-datadir": "phpunit tests/functional --filter=testActionGetTables",
         "tests": [
             "@tests-phpunit",
             "@tests-datadir"
