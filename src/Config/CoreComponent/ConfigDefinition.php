@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Config\CoreComponent;
 
-use Keboola\ExTeradata\Config\BaseConfigDefinition;
+use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class ConfigDefinition extends BaseConfigDefinition
@@ -16,24 +16,53 @@ class ConfigDefinition extends BaseConfigDefinition
         /** @noinspection NullPointerExceptionInspection */
         $parametersNode
             ->children()
-                ->append($this->getDbNode())
-                ->scalarNode('query')->end()
-                ->arrayNode('table')
+                ->arrayNode('db')
+                    ->isRequired()
                     ->children()
-                        ->scalarNode('schema')->end()
-                        ->scalarNode('tableName')->end()
+                        ->scalarNode('host')->isRequired()->cannotBeEmpty()->end()
+                        ->integerNode('port')->defaultValue(1025)->end()
+                        ->scalarNode('user')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('#password')->isRequired()->cannotBeEmpty()->end()
+                        ->scalarNode('database')->isRequired()->cannotBeEmpty()->end()
+                        ->arrayNode('ssh')
+                            ->children()
+                                ->booleanNode('enabled')->end()
+                                ->arrayNode('keys')
+                                    ->children()
+                                        ->scalarNode('private')->end()
+                                        ->scalarNode('#private')->end()
+                                        ->scalarNode('public')->end()
+                                    ->end()
+                                ->end()
+                                ->scalarNode('sshHost')->end()
+                                ->scalarNode('sshPort')->end()
+                                ->scalarNode('remoteHost')->end()
+                                ->scalarNode('remotePort')->end()
+                                ->scalarNode('localPort')->end()
+                                ->scalarNode('user')->end()
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
-                ->arrayNode('columns')
-                    ->prototype('scalar')->end()
+            ->scalarNode('query')
+            ->end()
+            ->arrayNode('table')
+                ->children()
+                    ->scalarNode('schema')->end()
+                    ->scalarNode('tableName')->end()
                 ->end()
-                ->scalarNode('outputTable')->isRequired()->cannotBeEmpty()->end()
-                ->booleanNode('incremental')->defaultValue(false)->end()
-                ->arrayNode('primaryKey')
-                    ->prototype('scalar')->end()
-                ->end()
-                ->integerNode('retries')->min(1)->end()
-                ->booleanNode('advancedMode')->end();
+            ->end()
+            ->arrayNode('columns')
+                ->prototype('scalar')->end()
+            ->end()
+            ->scalarNode('outputTable')->isRequired()->cannotBeEmpty()->end()
+            ->booleanNode('incremental')->defaultValue(false)->end()
+            ->arrayNode('primaryKey')
+                ->prototype('scalar')->end()
+            ->end()
+            ->integerNode('retries')->min(1)->end()
+            ->booleanNode('advancedMode')->end()
+        ;
 
         $parametersNode->validate()
             ->ifTrue(function ($v) {
