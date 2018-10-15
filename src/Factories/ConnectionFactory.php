@@ -8,10 +8,11 @@ use Dibi\Connection;
 
 class ConnectionFactory
 {
-    public function create(string $host, string $user, string $password): Connection
+    public function create(string $host, int $port, string $user, string $password): Connection
     {
+        //TDMSTPortNumber
         return new Connection([
-            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s', $host),
+            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s;TDMSTPortNumber=%s', $host, $port),
             'driver'   => 'odbc',
             'username' => $user,
             'password' => $password,

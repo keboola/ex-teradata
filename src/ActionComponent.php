@@ -24,6 +24,7 @@ class ActionComponent extends BaseComponent
         try {
             $connection = (new ConnectionFactory())->create(
                 $config->getHost(),
+                $config->getPort(),
                 $config->getUser(),
                 $config->getPassword()
             );

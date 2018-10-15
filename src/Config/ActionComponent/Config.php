@@ -13,6 +13,11 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'db', 'host']);
     }
 
+    public function getPort(): int
+    {
+        return $this->getValue(['parameters', 'db', 'port']);
+    }
+
     public function getUser(): string
     {
         return $this->getValue(['parameters', 'db', 'user']);

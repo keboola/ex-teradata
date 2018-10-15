@@ -25,6 +25,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         return [
             'host' => getenv('TERADATA_HOST'),
+            'port' => (int) getenv('TERADATA_PORT'),
             'user' => getenv('TERADATA_USERNAME'),
             '#password' => getenv('TERADATA_PASSWORD'),
             'database' => getenv('TERADATA_DATABASE'),
@@ -38,6 +39,7 @@ class DatadirTest extends AbstractDatadirTestCase
         $credentials = $this->getCredentials();
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -118,6 +120,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -169,6 +172,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -207,6 +211,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -245,6 +250,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -283,6 +289,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -319,6 +326,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -361,6 +369,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -398,6 +407,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -436,6 +446,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -474,6 +485,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -513,6 +525,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -550,6 +563,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -588,6 +602,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -627,6 +642,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );
@@ -670,6 +686,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $connection = (new ConnectionFactory())->create(
             $credentials['host'],
+            $credentials['port'],
             $credentials['user'],
             $credentials['#password']
         );

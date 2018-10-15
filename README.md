@@ -13,6 +13,7 @@ Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 The configuration requires a `db` node with the following properties: 
 
 - `host` - string (required): IP address or Hostname of Teradata server
+- `port` - integer (optional): Database port (default port is 1025)
 - `user` - string (required): User with correct access rights
 - `#password` - string (required): Password for given User
 - `database` - string (required): Database name
@@ -125,6 +126,7 @@ quay.io/keboola/aws-cli:latest sts get-session-token
 Create `.env` file:
 ```
 TERADATA_HOST=100.200.30.40
+TERADATA_PORT=1025
 TERADATA_USERNAME=user
 TERADATA_PASSWORD=password
 TERADATA_DATABASE=database_name
