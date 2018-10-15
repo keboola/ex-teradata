@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Keboola\ExTeradata\Config;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
