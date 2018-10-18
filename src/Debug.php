@@ -4,28 +4,36 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata;
 
+use Keboola\Component\Logger;
+
 class Debug
 {
-    public static function print(): void
+    public static function print(Logger $logger, string $datadir): void
     {
         $traceFile = '/usr/odbcusr/trace.log';
         if (file_exists($traceFile)) {
-            print PHP_EOL;
-            print PHP_EOL;
-            $trace = file_get_contents($traceFile);
-            print "Trace File:" . PHP_EOL;
-            print $trace;
-            print PHP_EOL;
+            $logger->info('Trace File:');
+            $handle = fopen($traceFile, "r");
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $logger->info((string) $line);
+                }
+                fclose($handle);
+            }
         } else {
             // print "Trace File does not exist." . PHP_EOL;
         }
 
         $debugFile = '/usr/odbcusr/debug.log';
         if (file_exists($debugFile)) {
-            $debug = file_get_contents($debugFile);
-            print "Debug File:" . PHP_EOL;
-            print $debug;
-            print PHP_EOL;
+            $logger->info('Debug File:');
+            $handle = fopen($debugFile, "r");
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $logger->info((string) $line);
+                }
+                fclose($handle);
+            }
         } else {
             // print "Debug File does not exist." . PHP_EOL;
         }

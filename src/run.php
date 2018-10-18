@@ -10,8 +10,8 @@ use Keboola\ExTeradata\CoreComponent;
 require __DIR__ . '/../vendor/autoload.php';
 
 $logger = new Logger();
+$dataDir = getenv('KBC_DATADIR') ? getenv('KBC_DATADIR') : '/data/';
 try {
-    $dataDir = getenv('KBC_DATADIR') ?? '/data/';
     $configJson = file_get_contents($dataDir . DIRECTORY_SEPARATOR . 'config.json');
     $action = json_decode((string) $configJson, true)['action'] ?? 'run';
 
@@ -23,11 +23,11 @@ try {
             $app = new ActionComponent($logger);
     }
     $app->run();
-    \Keboola\ExTeradata\Debug::print();
+    \Keboola\ExTeradata\Debug::print($logger, (string) $dataDir);
     exit(0);
 } catch (UserException $e) {
     $logger->error($e->getMessage());
-    \Keboola\ExTeradata\Debug::print();
+    \Keboola\ExTeradata\Debug::print($logger, (string) $dataDir);
     exit(1);
 } catch (\Throwable $e) {
     $logger->critical(
@@ -40,6 +40,6 @@ try {
             'errPrevious' => $e->getPrevious() ? get_class($e->getPrevious()) : '',
         ]
     );
-    \Keboola\ExTeradata\Debug::print();
+    \Keboola\ExTeradata\Debug::print($logger, (string) $dataDir);
     exit(2);
 }
