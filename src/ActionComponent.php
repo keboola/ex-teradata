@@ -71,8 +71,14 @@ class ActionComponent extends BaseComponent
 
     private function getTablesResponse(Connection $connection, string $database): array
     {
-        $tables = $connection->query("SELECT * FROM dbc.tables WHERE DatabaseName=?", $database)->fetchAll();
-        $columns = $connection->query("SELECT * FROM dbc.columns WHERE DatabaseName=?", $database)->fetchAll();
+        $tables = $connection->query(
+            "SELECT DatabaseName, TableName FROM dbc.tables WHERE DatabaseName=?",
+            $database
+        )->fetchAll();
+        $columns = $connection->query(
+            "SELECT TableName, ColumnName FROM dbc.columns WHERE DatabaseName=?",
+            $database
+        )->fetchAll();
 
         $tableResponse = [];
         foreach ($tables as $table) {
