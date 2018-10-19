@@ -11,6 +11,20 @@ use Keboola\ExTeradata\Factories\ConnectionFactory;
 
 class DatadirTest extends AbstractDatadirTestCase
 {
+    /** @var Connection */
+    private $connection;
+
+    public function setUp(): void
+    {
+        $credentials = $this->getCredentials();
+        $this->connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+    }
+
     private function getCredentials(): array
     {
         $requiredCredentials = ['TERADATA_HOST', 'TERADATA_USERNAME', 'TERADATA_PASSWORD', 'TERADATA_DATABASE'];
@@ -36,19 +50,10 @@ class DatadirTest extends AbstractDatadirTestCase
     {
         parent::tearDown();
 
-        $credentials = $this->getCredentials();
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-
         $database = 'ex_teradata_test';
-
         try {
-            $connection->query('DELETE DATABASE ' . $database);
-            $connection->query('DROP DATABASE ' . $database);
+            $this->connection->query('DELETE DATABASE ' . $database);
+            $this->connection->query('DROP DATABASE ' . $database);
         } catch (\Throwable $exception) {
             if (!preg_match(
                 '~Database \'(.+)\' does not exist. S0002~',
@@ -59,63 +64,63 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function createDatabase(Connection $connection, string $database): void
+    private function createDatabase(string $database): void
     {
         try {
             $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function createTable(Connection $connection, string $database, string $table): void
+    private function createTable(string $database, string $table): void
     {
         try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function createTableVarchar(Connection $connection, string $database, string $table): void
+    private function createTableVarchar(string $database, string $table): void
     {
         try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function insertBasicData(Connection $connection, string $database, string $table): void
+    private function insertBasicData(string $database, string $table): void
     {
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function insertAggregatedBasicData(Connection $connection, string $database, string $table): void
+    private function insertAggregatedBasicData(string $database, string $table): void
     {
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row3', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row4', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
@@ -127,19 +132,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $response = [
             'status' => 'success',
@@ -179,19 +177,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -218,19 +209,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -257,19 +241,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -296,19 +273,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -333,19 +303,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -376,19 +339,12 @@ class DatadirTest extends AbstractDatadirTestCase
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -415,20 +371,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'czech_chars';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('ěščřžýáíéůúďťň', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
@@ -458,52 +408,46 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
 
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'escaping';
 
-        $this->createDatabase($connection, $database);
-        $this->createTableVarchar($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTableVarchar($database, $table);
 
         try {
             $sql = "INSERT INTO $database.$table VALUES ('unicode characters', 'ľš čť žý áí éú äô ň')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             /* this tests for sure that the characters are properly understood as unicode by teradata:
                 If they are inserted correctly, then č is gonna be converted to Č, if not, it's either
                 gonna be left as is or converted to some garbage. */
             $sql = "INSERT INTO $database.$table VALUES ('unicode initcap', " .
                 "(SELECT INITCAP(column2) FROM $database.$table WHERE column1 = 'unicode characters'))";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('line with enclosure', 'second column')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('first', 'something with
 
 double new line')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('columns with
 new line', 'columns with 	tab')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with \n \t \\',
  'second col')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with enclosure \"\", and comma inside text',
  'second column enclosure in text \"\"')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with backslash \ inside',
  'column with backslash and enclosure \\\"\"')";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
@@ -532,19 +476,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -571,19 +508,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -610,19 +540,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -650,19 +573,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -688,20 +604,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-
         $database = $credentials['database'];
         $table = 'test_2';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertAggregatedBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertAggregatedBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -727,19 +635,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -767,19 +668,12 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
@@ -811,18 +705,11 @@ new line', 'columns with 	tab')";
 
         $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
         $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
         $database = $credentials['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
