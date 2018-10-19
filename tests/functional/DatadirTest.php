@@ -72,7 +72,7 @@ class DatadirTest extends AbstractDatadirTestCase
     private function createTable(Connection $connection, string $database, string $table): void
     {
         try {
-            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (16), column2 INTEGER)";
+            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
             $connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
@@ -379,6 +379,49 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createDatabase($connection, $database);
         $this->createTable($connection, $database, $table);
         $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractTableCzechChars(): void
+    {
+        $testDirectory = __DIR__ . '/basic-data-czech-chars';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'czech_chars';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        try {
+            $sql = "INSERT INTO $database.$table  VALUES ('ěščřžýáíéůúďťň', 1)";
+            $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',

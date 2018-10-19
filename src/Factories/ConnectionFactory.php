@@ -12,7 +12,7 @@ class ConnectionFactory
     {
         //TDMSTPortNumber
         return new Connection([
-            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s;TDMSTPortNumber=%s', $host, $port),
+            'dsn' => sprintf('DRIVER={Teradata};DBCName=%s;TDMSTPortNumber=%s;Charset=UTF8', $host, $port),
             'driver'   => 'odbc',
             'username' => $user,
             'password' => $password,
