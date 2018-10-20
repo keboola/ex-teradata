@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\ExTeradata\Tests\Functional;
 
 use Dibi\Connection;
+use Keboola\Component\JsonFileHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Keboola\DatadirTests\DatadirTestSpecification;
 use Keboola\ExTeradata\Factories\ConnectionFactory;
@@ -128,7 +129,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
     private function getConfig(string $dataDir, array $customDbNode = []): array
     {
-        $configuration = json_decode((string) file_get_contents($dataDir . '/config.json'), true);
+        $configuration = JsonFileHelper::read($dataDir . '/config.json');
         $configuration['parameters']['db'] = array_merge($this->getCredentials(), $customDbNode);
         return $configuration;
     }
@@ -167,9 +168,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -195,9 +196,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -223,9 +224,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -251,9 +252,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -274,9 +275,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -307,9 +308,9 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration['parameters']['table'] = [
             'schema' => 'ex_teradata_test',
         ];
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -335,9 +336,9 @@ class DatadirTest extends AbstractDatadirTestCase
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -470,9 +471,9 @@ new line', 'columns with 	tab')";
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['table']['schema'] = 'database"_name';
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -499,9 +500,9 @@ new line', 'columns with 	tab')";
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['table']['tableName'] = 'te"st_1';
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -529,9 +530,9 @@ new line', 'columns with 	tab')";
 
         $configuration['parameters']['table']['tableName'] = 'test_1';
         $configuration['parameters']['columns'] = ['col"umn1'];
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -557,9 +558,9 @@ new line', 'columns with 	tab')";
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -585,9 +586,9 @@ new line', 'columns with 	tab')";
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
@@ -614,9 +615,9 @@ new line', 'columns with 	tab')";
         $tempDatadir = $this->getTempDatadir($specification);
 
         $configuration['parameters']['table']['schema'] = 'invalid_database';
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
 
@@ -648,9 +649,9 @@ new line', 'columns with 	tab')";
             'tableName' => 'invalid_table',
         ];
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
 
@@ -676,9 +677,9 @@ new line', 'columns with 	tab')";
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
 
@@ -700,9 +701,9 @@ new line', 'columns with 	tab')";
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        file_put_contents(
+        JsonFileHelper::write(
             $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+            $configuration
         );
         $process = $this->runScript($tempDatadir->getTmpFolder());
 
