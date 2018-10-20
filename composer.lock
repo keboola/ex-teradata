@@ -118,19 +118,20 @@
         },
         {
             "name": "keboola/php-component",
-            "version": "4.2.0",
+            "version": "4.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-component.git",
-                "reference": "57880731858a7bc46d9913614fcfe6e36b3dc763"
+                "reference": "548f157d27c6a23c5b94335a7bc8ff8002c3da18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-component/zipball/57880731858a7bc46d9913614fcfe6e36b3dc763",
-                "reference": "57880731858a7bc46d9913614fcfe6e36b3dc763",
+                "url": "https://api.github.com/repos/keboola/php-component/zipball/548f157d27c6a23c5b94335a7bc8ff8002c3da18",
+                "reference": "548f157d27c6a23c5b94335a7bc8ff8002c3da18",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "monolog/monolog": "^1.23",
                 "php": "^7.1",
                 "symfony/config": "^4.0",
@@ -168,7 +169,7 @@
                 "docker",
                 "keboola"
             ],
-            "time": "2018-05-21T09:31:18+00:00"
+            "time": "2018-10-19T07:51:16+00:00"
         },
         {
             "name": "monolog/monolog",
