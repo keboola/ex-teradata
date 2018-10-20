@@ -126,13 +126,18 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
+    private function getConfig(string $dataDir, array $customDbNode = []): array
+    {
+        $configuration = json_decode((string) file_get_contents($dataDir . '/config.json'), true);
+        $configuration['parameters']['db'] = array_merge($this->getCredentials(), $customDbNode);
+        return $configuration;
+    }
+
     public function testActionGetTables(): void
     {
-        $testDirectory = __DIR__ . '/get-tables';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/get-tables';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -154,15 +159,14 @@ class DatadirTest extends AbstractDatadirTestCase
         ];
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             0,
             json_encode($response, JSON_PRETTY_PRINT),
             null,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -173,11 +177,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testInvalidHostname(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['host' => 'invalid_hostname']);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -185,16 +187,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['host'] = 'invalid_hostname';
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -205,11 +205,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testInvalidUser(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['user' => 'invalid_user']);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -217,16 +215,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'The User or Password is invalid.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['user'] = 'invalid_user';
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -237,11 +233,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testInvalidPassword(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['#password' => 'invalid_password']);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -249,16 +243,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'The User or Password is invalid.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $credentials['#password'] = 'invalid_password';
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -269,23 +261,16 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testWithoutCredentials(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
-        $table = 'test_1';
-
-        $this->createDatabase($database);
-        $this->createTable($database, $table);
-        $this->insertBasicData($database, $table);
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        unset($configuration['parameters']['db']);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
@@ -299,11 +284,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testWithoutSpecifiedTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -311,16 +294,15 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Invalid configuration for path "root.parameters": The \'query\' or'
                 . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['query'] = null;
         $configuration['parameters']['table'] = [
             'schema' => 'ex_teradata_test',
@@ -335,11 +317,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testExtractAllFromBasicData(): void
     {
-        $testDirectory = __DIR__ . '/basic-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -347,15 +327,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -472,11 +451,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractEmptyDataWithRestrictedCharacterInDatabaseName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -484,15 +461,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['table']['schema'] = 'database"_name';
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -504,11 +480,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractEmptyDataWithRestrictedCharacterInTableName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -516,15 +490,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['table']['tableName'] = 'te"st_1';
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -536,11 +509,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractEmptyDataWithRestrictedCharacterInColumnName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -548,15 +519,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['table']['tableName'] = 'test_1';
         $configuration['parameters']['columns'] = ['col"umn1'];
         file_put_contents(
@@ -569,11 +539,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractColumn1FromBasicData(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-export-one-column';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-export-one-column';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -581,15 +549,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -600,11 +567,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractWithUserSql(): void
     {
-        $testDirectory = __DIR__ . '/aggregated-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/aggregated-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_2';
 
         $this->createDatabase($database);
@@ -612,15 +577,14 @@ new line', 'columns with 	tab')";
         $this->insertAggregatedBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             0,
             'Extracted table into: "out.c-main.test-2".' . PHP_EOL,
             null,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
             json_encode($configuration, JSON_PRETTY_PRINT)
@@ -631,11 +595,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractFromNonExistingDatabase(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -643,15 +605,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Database "invalid_database" does not exist.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['table']['schema'] = 'invalid_database';
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -664,11 +625,9 @@ new line', 'columns with 	tab')";
 
     public function testExtractFromNonExistingTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
@@ -676,15 +635,14 @@ new line', 'columns with 	tab')";
         $this->insertBasicData($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
 
-        $configuration['parameters']['db'] = $credentials;
         $configuration['parameters']['table'] = [
             'schema' => 'ex_teradata_test',
             'tableName' => 'invalid_table',
@@ -701,26 +659,22 @@ new line', 'columns with 	tab')";
 
     public function testExtractEmptyTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-table';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-table';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
         $this->createDatabase($database);
         $this->createTable($database, $table);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
             null,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
 
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
@@ -733,23 +687,18 @@ new line', 'columns with 	tab')";
 
     public function testExtractTableWithByteColumn(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-byte-column';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
+        $dataDir = __DIR__ . '/basic-data-byte-column';
+        $configuration = $this->getConfig($dataDir, ['database' => 'DBC']);
 
         $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+            $dataDir . '/source/data',
             1,
             null,
             'You are probably trying to export one or more columns with data type "byte"'
             . ' which is not allowed.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            $dataDir . '/expected/data/out'
         );
         $tempDatadir = $this->getTempDatadir($specification);
-
-        $credentials['database'] = 'DBC';
-        $configuration['parameters']['db'] = $credentials;
 
         file_put_contents(
             $tempDatadir->getTmpFolder() . '/config.json',
