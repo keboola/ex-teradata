@@ -134,6 +134,31 @@ class DatadirTest extends AbstractDatadirTestCase
         return $configuration;
     }
 
+    protected function runTestWithCustomConfiguration(
+        string $testDirectory,
+        array $configuration,
+        int $expectedReturnCode,
+        ?string $expectedStdout,
+        ?string $expectedStderr
+    ): void {
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            $expectedReturnCode,
+            $expectedStdout,
+            $expectedStderr,
+            $testDirectory . '/expected/data/out'
+        );
+
+        $tempDatadir = $this->getTempDatadir($specification);
+        $tempFolder = $tempDatadir->getTmpFolder();
+        file_put_contents(
+            $tempFolder . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempFolder);
+        $this->assertMatchesSpecification($specification, $process, $tempFolder);
+    }
+
     public function testActionGetTables(): void
     {
         $dataDir = __DIR__ . '/get-tables';
@@ -159,27 +184,21 @@ class DatadirTest extends AbstractDatadirTestCase
             ],
         ];
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             json_encode($response, JSON_PRETTY_PRINT),
-            null,
-            $dataDir . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidHostname(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir, ['host' => 'invalid_hostname']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -187,27 +206,21 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidUser(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir, ['user' => 'invalid_user']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -215,27 +228,21 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'The User or Password is invalid.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidPassword(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir, ['#password' => 'invalid_password']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -243,21 +250,13 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'The User or Password is invalid.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testWithoutCredentials(): void
@@ -266,27 +265,20 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = $this->getConfig($dataDir);
         unset($configuration['parameters']['db']);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testWithoutSpecifiedTable(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test';
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -294,26 +286,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
             'Invalid configuration for path "root.parameters": The \'query\' or'
-                . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['query'] = null;
-        $configuration['parameters']['table'] = [
-            'schema' => 'ex_teradata_test',
-        ];
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractAllFromBasicData(): void
@@ -327,21 +307,13 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $dataDir . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableCzechChars(): void
@@ -454,6 +426,11 @@ new line', 'columns with 	tab')";
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'database"_name',
+            'tableName' => 'test_1',
+        ];
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -461,28 +438,24 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['table']['schema'] = 'database"_name';
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInTableName(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'te"st_1',
+        ];
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -490,28 +463,25 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['table']['tableName'] = 'te"st_1';
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInColumnName(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'test_1',
+        ];
+        $configuration['parameters']['columns'] = ['col"umn1'];
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -519,23 +489,13 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['table']['tableName'] = 'test_1';
-        $configuration['parameters']['columns'] = ['col"umn1'];
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractColumn1FromBasicData(): void
@@ -549,21 +509,13 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $dataDir . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractWithUserSql(): void
@@ -577,27 +529,24 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertAggregatedBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-2".' . PHP_EOL,
-            null,
-            $dataDir . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractFromNonExistingDatabase(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'invalid_database';
+        $configuration['parameters']['table'] = [
+            'schema' => 'invalid_database',
+            'tableName' => 'test_1',
+        ];
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -605,29 +554,24 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Database "invalid_database" does not exist.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'Database "invalid_database" does not exist.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['table']['schema'] = 'invalid_database';
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractFromNonExistingTable(): void
     {
         $dataDir = __DIR__ . '/empty-data';
         $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'invalid_table';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'invalid_table',
+        ];
         $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
@@ -635,27 +579,13 @@ new line', 'columns with 	tab')";
         $this->createTable($database, $table);
         $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['table'] = [
-            'schema' => 'ex_teradata_test',
-            'tableName' => 'invalid_table',
-        ];
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyTable(): void
@@ -668,22 +598,13 @@ new line', 'columns with 	tab')";
         $this->createDatabase($database);
         $this->createTable($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $dataDir . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableWithByteColumn(): void
@@ -691,22 +612,13 @@ new line', 'columns with 	tab')";
         $dataDir = __DIR__ . '/basic-data-byte-column';
         $configuration = $this->getConfig($dataDir, ['database' => 'DBC']);
 
-        $specification = new DatadirTestSpecification(
-            $dataDir . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
             'You are probably trying to export one or more columns with data type "byte"'
-            . ' which is not allowed.' . PHP_EOL,
-            $dataDir . '/expected/data/out'
+            . ' which is not allowed.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        JsonFileHelper::write(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            $configuration
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 }
