@@ -9,7 +9,7 @@
         "dg/bypass-finals": "^1.1",
         "jakub-onderka/php-parallel-lint": "^1.0",
         "keboola/coding-standard": "^6.0",
-        "keboola/datadir-tests": "^2.1",
+        "keboola/datadir-tests": "^2.2",
         "keboola/php-temp": "^1.0",
         "mockery/mockery": "^1.1",
         "phpstan/phpstan-mockery": "^0.10",
