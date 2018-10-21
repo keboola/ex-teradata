@@ -17,6 +17,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function setUp(): void
     {
+        parent::setUp();
         $credentials = $this->getCredentials();
         $this->connection = (new ConnectionFactory())->create(
             $credentials['host'],
@@ -132,31 +133,6 @@ class DatadirTest extends AbstractDatadirTestCase
         $configuration = JsonFileHelper::read($dataDir . '/config.json');
         $configuration['parameters']['db'] = array_merge($this->getCredentials(), $customDbNode);
         return $configuration;
-    }
-
-    protected function runTestWithCustomConfiguration(
-        string $testDirectory,
-        array $configuration,
-        int $expectedReturnCode,
-        ?string $expectedStdout,
-        ?string $expectedStderr
-    ): void {
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
-            $expectedReturnCode,
-            $expectedStdout,
-            $expectedStderr,
-            $testDirectory . '/expected/data/out'
-        );
-
-        $tempDatadir = $this->getTempDatadir($specification);
-        $tempFolder = $tempDatadir->getTmpFolder();
-        file_put_contents(
-            $tempFolder . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempFolder);
-        $this->assertMatchesSpecification($specification, $process, $tempFolder);
     }
 
     public function testActionGetTables(): void
