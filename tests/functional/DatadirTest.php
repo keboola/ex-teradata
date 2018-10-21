@@ -471,7 +471,14 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createTableVarchar($connection, $database, $table);
 
         try {
-            $sql = "INSERT INTO $database.$table VALUES ('unicode characters', 'ľščťžýáíéúäôň')";
+            $sql = "INSERT INTO $database.$table VALUES ('unicode characters', 'ľš čť žý áí éú äô ň')";
+            $connection->query($sql);
+
+            /* this tests for sure that the characters are properly understood as unicode by teradata:
+                If they are inserted correctly, then č is gonna be converted to Č, if not, it's either
+                gonna be left as is or converted to some garbage. */
+            $sql = "INSERT INTO $database.$table VALUES ('unicode initcap', " .
+                "(SELECT INITCAP(column2) FROM $database.$table WHERE column1 = 'unicode characters'))";
             $connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('line with enclosure', 'second column')";
