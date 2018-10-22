@@ -1,0 +1,13 @@
+"column1","column2"
+"unicode characters","ľš čť žý áí éú äô ň"
+"columns with
+new line","columns with 	tab"
+"unicode initcap","Ľš Čť Žý Áí Éú Äô Ň"
+"column with backslash \ inside","column with backslash and enclosure \"""""
+"column with 
+ 	 \","second col"
+"line with enclosure","second column"
+"first","something with
+
+double new line"
+"column with enclosure """", and comma inside text","second column enclosure in text """""

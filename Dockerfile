@@ -19,6 +19,7 @@ COPY docker/composer-install.sh /tmp/composer-install.sh
 
 RUN apt-get update && apt-get install -y \
         git \
+        locales \
         unzip \
         lib32stdc++6 \
         unixodbc \
@@ -37,6 +38,12 @@ ENV ODBCHOME = /opt/teradata/client/ODBC_64/
 ENV ODBCINI = /opt/teradata/client/ODBC_64/odbc.ini
 ENV ODBCINST = /opt/teradata/client/ODBC_64/odbcinst.ini
 ENV LD_LIBRARY_PATH = /opt/teradata/client/ODBC_64/lib
+
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+RUN printf 'en_US.UTF-8 UTF-8\n' >> /etc/locale.gen \
+    && locale-gen
 
 RUN set -x \
     && docker-php-source extract \

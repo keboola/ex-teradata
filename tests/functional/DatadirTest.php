@@ -72,7 +72,17 @@ class DatadirTest extends AbstractDatadirTestCase
     private function createTable(Connection $connection, string $database, string $table): void
     {
         try {
-            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (16), column2 INTEGER)";
+            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
+            $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
+    }
+
+    private function createTableVarchar(Connection $connection, string $database, string $table): void
+    {
+        try {
+            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
             $connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
@@ -379,6 +389,124 @@ class DatadirTest extends AbstractDatadirTestCase
         $this->createDatabase($connection, $database);
         $this->createTable($connection, $database, $table);
         $this->insertBasicData($connection, $database, $table);
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractTableCzechChars(): void
+    {
+        $testDirectory = __DIR__ . '/basic-data-czech-chars';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'czech_chars';
+
+        $this->createDatabase($connection, $database);
+        $this->createTable($connection, $database, $table);
+        try {
+            $sql = "INSERT INTO $database.$table  VALUES ('ěščřžýáíéůúďťň', 1)";
+            $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
+
+        $specification = new DatadirTestSpecification(
+            $testDirectory . '/source/data',
+            0,
+            'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
+            null,
+            $testDirectory . '/expected/data/out'
+        );
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        $configuration['parameters']['db'] = $credentials;
+        file_put_contents(
+            $tempDatadir->getTmpFolder() . '/config.json',
+            json_encode($configuration, JSON_PRETTY_PRINT)
+        );
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+    }
+
+    public function testExtractTableEscaping(): void
+    {
+        $testDirectory = __DIR__ . '/basic-data-escaping';
+
+        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
+        $credentials = $this->getCredentials();
+
+        $connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+        $database = $credentials['database'];
+        $table = 'escaping';
+
+        $this->createDatabase($connection, $database);
+        $this->createTableVarchar($connection, $database, $table);
+
+        try {
+            $sql = "INSERT INTO $database.$table VALUES ('unicode characters', 'ľš čť žý áí éú äô ň')";
+            $connection->query($sql);
+
+            /* this tests for sure that the characters are properly understood as unicode by teradata:
+                If they are inserted correctly, then č is gonna be converted to Č, if not, it's either
+                gonna be left as is or converted to some garbage. */
+            $sql = "INSERT INTO $database.$table VALUES ('unicode initcap', " .
+                "(SELECT INITCAP(column2) FROM $database.$table WHERE column1 = 'unicode characters'))";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('line with enclosure', 'second column')";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('first', 'something with
+
+double new line')";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('columns with
+new line', 'columns with 	tab')";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('column with \n \t \\',
+ 'second col')";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('column with enclosure \"\", and comma inside text',
+ 'second column enclosure in text \"\"')";
+            $connection->query($sql);
+
+            $sql = "INSERT INTO $database.$table VALUES ('column with backslash \ inside',
+ 'column with backslash and enclosure \\\"\"')";
+            $connection->query($sql);
+        } catch (\Throwable $exception) {
+            print $exception->getMessage();
+        }
 
         $specification = new DatadirTestSpecification(
             $testDirectory . '/source/data',
