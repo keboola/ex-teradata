@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "56564999f3bb873d31d3c0c10f178f0d",
+    "content-hash": "bcbbd9ee65ba7c90c88650aab6e41016",
     "packages": [
         {
             "name": "dibi/dibi",
@@ -118,16 +118,16 @@
         },
         {
             "name": "keboola/php-component",
-            "version": "4.4.2",
+            "version": "5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-component.git",
-                "reference": "548f157d27c6a23c5b94335a7bc8ff8002c3da18"
+                "reference": "264a7a5b7ebab3724ccb7d7202bc1344b58d3543"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-component/zipball/548f157d27c6a23c5b94335a7bc8ff8002c3da18",
-                "reference": "548f157d27c6a23c5b94335a7bc8ff8002c3da18",
+                "url": "https://api.github.com/repos/keboola/php-component/zipball/264a7a5b7ebab3724ccb7d7202bc1344b58d3543",
+                "reference": "264a7a5b7ebab3724ccb7d7202bc1344b58d3543",
                 "shasum": ""
             },
             "require": {
@@ -169,7 +169,7 @@
                 "docker",
                 "keboola"
             ],
-            "time": "2018-10-19T07:51:16+00:00"
+            "time": "2018-10-23T14:20:29+00:00"
         },
         {
             "name": "monolog/monolog",

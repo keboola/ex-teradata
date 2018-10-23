@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Keboola\ExTeradata\Tests\Functional;
 
 use Dibi\Connection;
-use Keboola\Component\JsonFileHelper;
+use Keboola\Component\JsonHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
-use Keboola\DatadirTests\DatadirTestSpecification;
 use Keboola\ExTeradata\Factories\ConnectionFactory;
 
 class DatadirTest extends AbstractDatadirTestCase
@@ -130,7 +129,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
     private function getConfig(string $dataDir, array $customDbNode = []): array
     {
-        $configuration = JsonFileHelper::read($dataDir . '/config.json');
+        $configuration = JsonHelper::readFile($dataDir . '/config.json');
         $configuration['parameters']['db'] = array_merge($this->getCredentials(), $customDbNode);
         return $configuration;
     }
@@ -164,7 +163,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $dataDir,
             $configuration,
             0,
-            json_encode($response, JSON_PRETTY_PRINT),
+            JsonHelper::encode($response),
             null
         );
     }
