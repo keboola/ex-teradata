@@ -294,12 +294,9 @@ class DatadirTest extends AbstractDatadirTestCase
 
     public function testExtractTableCzechChars(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-czech-chars';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-czech-chars';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'czech_chars';
 
         $this->createDatabase($database);
@@ -311,32 +308,20 @@ class DatadirTest extends AbstractDatadirTestCase
             print $exception->getMessage();
         }
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableEscaping(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-escaping';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-escaping';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'escaping';
 
         $this->createDatabase($database);
@@ -380,22 +365,13 @@ new line', 'columns with 	tab')";
             print $exception->getMessage();
         }
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInDatabaseName(): void
