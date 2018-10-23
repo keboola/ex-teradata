@@ -71,31 +71,25 @@ class ActionComponent extends BaseComponent
 
     private function getTablesResponse(Connection $connection, string $database): array
     {
-        $tables = $connection->query("SELECT * FROM dbc.tables WHERE DatabaseName=?", $database)->fetchAll();
-        $columns = $connection->query("SELECT * FROM dbc.columns WHERE DatabaseName=?", $database)->fetchAll();
+        $sql = "SELECT tab.TVMName TableName, col.FieldName ColumnName FROM DBC.TVFields col
+JOIN DBC.TVM tab
+ON tab.TVMId = col.TableId
+JOIN DBC.Dbase db
+ON db.DatabaseId = tab.DatabaseId
+WHERE db.DatabaseName = ?
+ORDER BY TableName, ColumnName";
+        $rows = $connection->query($sql, $database)->fetchAll();
 
-        $tableResponse = [];
-        foreach ($tables as $table) {
-            $tableResponse[] = new Table(
-                trim($table['DatabaseName']),
-                trim($table['TableName']),
-                $this->getTableColumnsResponse(trim($table['TableName']), $columns)
-            );
-        }
-
-        return $tableResponse;
-    }
-
-    private function getTableColumnsResponse(string $table, array $columns): array
-    {
-        $columnsResponse = [];
-        foreach ($columns as $column) {
-            if (trim($column['TableName']) === $table) {
-                $columnsResponse[] = new Column(
-                    trim($column['ColumnName'])
-                );
+        /** @var Table[] $tables */
+        $tables = [];
+        foreach ($rows as $row) {
+            $tableName = $row['TableName'];
+            if (!isset($tables[$tableName])) {
+                $tables[$tableName] = new Table($database, $tableName);
             }
+            $tables[$tableName]->addColumn(new Column($row['ColumnName']));
         }
-        return $columnsResponse;
+
+        return array_values($tables);
     }
 }

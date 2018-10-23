@@ -22,7 +22,7 @@ class Table implements \JsonSerializable
     public function __construct(
         string $schema,
         string $tableName,
-        array $columns
+        array $columns = []
         // int $autoIncrement,
         // int $rowCount
     ) {
@@ -31,6 +31,11 @@ class Table implements \JsonSerializable
         $this->columns = $columns;
         // $this->autoIncrement = $autoIncrement;
         // $this->rowCount = $rowCount;
+    }
+
+    public function addColumn(Column $column): void
+    {
+        $this->columns[] = $column;
     }
 
     public function jsonSerialize(): array
