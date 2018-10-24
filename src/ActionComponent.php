@@ -19,18 +19,12 @@ class ActionComponent extends BaseComponent
         /** @var Config $config */
         $config = $this->getConfig();
 
-        $exceptionHandler = new ExceptionHandler();
-
-        try {
-            $connection = (new ConnectionFactory())->create(
-                $config->getHost(),
-                $config->getPort(),
-                $config->getUser(),
-                $config->getPassword()
-            );
-        } catch (\Throwable $exception) {
-            throw $exceptionHandler->createException($exception);
-        }
+        $connection = (new ConnectionFactory())->create(
+            $config->getHost(),
+            $config->getPort(),
+            $config->getUser(),
+            $config->getPassword()
+        );
 
         switch ($config->getAction()) {
             case 'testConnection':
@@ -78,7 +72,12 @@ JOIN DBC.Dbase db
 ON db.DatabaseId = tab.DatabaseId
 WHERE db.DatabaseName = ?
 ORDER BY TableName, ColumnName";
-        $rows = $connection->query($sql, $database)->fetchAll();
+
+        try {
+            $rows = $connection->query($sql, $database)->fetchAll();
+        } catch (\Throwable $exception) {
+            throw (new ExceptionHandler())->createException($exception);
+        }
 
         /** @var Table[] $tables */
         $tables = [];
