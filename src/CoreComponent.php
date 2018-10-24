@@ -19,16 +19,12 @@ class CoreComponent extends BaseComponent
 
         $exceptionHandler = new ExceptionHandler();
 
-        try {
-            $connection = (new ConnectionFactory())->create(
-                $config->getHost(),
-                $config->getPort(),
-                $config->getUser(),
-                $config->getPassword()
-            );
-        } catch (\Throwable $exception) {
-            throw $exceptionHandler->createException($exception);
-        }
+        $connection = (new ConnectionFactory())->create(
+            $config->getHost(),
+            $config->getPort(),
+            $config->getUser(),
+            $config->getPassword()
+        );
 
         $extractorHelper = new ExtractorHelper();
         $extractor = new Extractor(

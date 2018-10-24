@@ -19,18 +19,12 @@ class ActionComponent extends BaseComponent
         /** @var Config $config */
         $config = $this->getConfig();
 
-        $exceptionHandler = new ExceptionHandler();
-
-        try {
-            $connection = (new ConnectionFactory())->create(
-                $config->getHost(),
-                $config->getPort(),
-                $config->getUser(),
-                $config->getPassword()
-            );
-        } catch (\Throwable $exception) {
-            throw $exceptionHandler->createException($exception);
-        }
+        $connection = (new ConnectionFactory())->create(
+            $config->getHost(),
+            $config->getPort(),
+            $config->getUser(),
+            $config->getPassword()
+        );
 
         switch ($config->getAction()) {
             case 'testConnection':
