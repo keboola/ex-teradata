@@ -1,15 +1,18 @@
 {
+    "name": "keboola/ex-teradata",
+    "description": "Teradata database extractor",
+    "license": "MIT",
     "require": {
         "php": "^7.1",
         "dibi/dibi": "^4.0",
         "keboola/csv": "^2.0",
-        "keboola/php-component": "^4.1"
+        "keboola/php-component": "^5.0"
     },
     "require-dev": {
         "dg/bypass-finals": "^1.1",
         "jakub-onderka/php-parallel-lint": "^1.0",
         "keboola/coding-standard": "^6.0",
-        "keboola/datadir-tests": "^2.1",
+        "keboola/datadir-tests": "^2.2",
         "keboola/php-temp": "^1.0",
         "mockery/mockery": "^1.1",
         "phpstan/phpstan-mockery": "^0.10",

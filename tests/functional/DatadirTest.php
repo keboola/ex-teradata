@@ -5,12 +5,27 @@ declare(strict_types=1);
 namespace Keboola\ExTeradata\Tests\Functional;
 
 use Dibi\Connection;
+use Keboola\Component\JsonHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
-use Keboola\DatadirTests\DatadirTestSpecification;
 use Keboola\ExTeradata\Factories\ConnectionFactory;
 
 class DatadirTest extends AbstractDatadirTestCase
 {
+    /** @var Connection */
+    private $connection;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $credentials = $this->getCredentials();
+        $this->connection = (new ConnectionFactory())->create(
+            $credentials['host'],
+            $credentials['port'],
+            $credentials['user'],
+            $credentials['#password']
+        );
+    }
+
     private function getCredentials(): array
     {
         $requiredCredentials = ['TERADATA_HOST', 'TERADATA_USERNAME', 'TERADATA_PASSWORD', 'TERADATA_DATABASE'];
@@ -36,19 +51,10 @@ class DatadirTest extends AbstractDatadirTestCase
     {
         parent::tearDown();
 
-        $credentials = $this->getCredentials();
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-
         $database = 'ex_teradata_test';
-
         try {
-            $connection->query('DELETE DATABASE ' . $database);
-            $connection->query('DROP DATABASE ' . $database);
+            $this->connection->query('DELETE DATABASE ' . $database);
+            $this->connection->query('DROP DATABASE ' . $database);
         } catch (\Throwable $exception) {
             if (!preg_match(
                 '~Database \'(.+)\' does not exist. S0002~',
@@ -59,87 +65,85 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function createDatabase(Connection $connection, string $database): void
+    private function createDatabase(string $database): void
     {
         try {
             $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function createTable(Connection $connection, string $database, string $table): void
+    private function createTable(string $database, string $table): void
     {
         try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function createTableVarchar(Connection $connection, string $database, string $table): void
+    private function createTableVarchar(string $database, string $table): void
     {
         try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function insertBasicData(Connection $connection, string $database, string $table): void
+    private function insertBasicData(string $database, string $table): void
     {
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
-    private function insertAggregatedBasicData(Connection $connection, string $database, string $table): void
+    private function insertAggregatedBasicData(string $database, string $table): void
     {
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('row1', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row3', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table  VALUES ('row4', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
+    }
+
+    private function getConfig(string $dataDir, array $customDbNode = []): array
+    {
+        $configuration = JsonHelper::readFile($dataDir . '/config.json');
+        $configuration['parameters']['db'] = array_merge($this->getCredentials(), $customDbNode);
+        return $configuration;
     }
 
     public function testActionGetTables(): void
     {
-        $testDirectory = __DIR__ . '/get-tables';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/get-tables';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
         $response = [
             'status' => 'success',
@@ -155,721 +159,417 @@ class DatadirTest extends AbstractDatadirTestCase
             ],
         ];
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
-            json_encode($response, JSON_PRETTY_PRINT),
-            null,
-            $testDirectory . '/expected/data/out'
+            JsonHelper::encode($response),
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidHostname(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['host' => 'invalid_hostname']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $credentials['host'] = 'invalid_hostname';
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidUser(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['user' => 'invalid_user']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'The User or Password is invalid.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $credentials['user'] = 'invalid_user';
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testInvalidPassword(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir, ['#password' => 'invalid_password']);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['query'] = 'SELECT 1';
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'The User or Password is invalid.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $credentials['#password'] = 'invalid_password';
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testWithoutCredentials(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        unset($configuration['parameters']['db']);
 
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
-        $table = 'test_1';
-
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
-
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testWithoutSpecifiedTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test';
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
             'Invalid configuration for path "root.parameters": The \'query\' or'
-                . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['query'] = null;
-        $configuration['parameters']['table'] = [
-            'schema' => 'ex_teradata_test',
-        ];
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractAllFromBasicData(): void
     {
-        $testDirectory = __DIR__ . '/basic-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableCzechChars(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-czech-chars';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-czech-chars';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'czech_chars';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
         try {
             $sql = "INSERT INTO $database.$table  VALUES ('ěščřžýáíéůúďťň', 1)";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableEscaping(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-escaping';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-escaping';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'escaping';
 
-        $this->createDatabase($connection, $database);
-        $this->createTableVarchar($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTableVarchar($database, $table);
 
         try {
             $sql = "INSERT INTO $database.$table VALUES ('unicode characters', 'ľš čť žý áí éú äô ň')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             /* this tests for sure that the characters are properly understood as unicode by teradata:
                 If they are inserted correctly, then č is gonna be converted to Č, if not, it's either
                 gonna be left as is or converted to some garbage. */
             $sql = "INSERT INTO $database.$table VALUES ('unicode initcap', " .
                 "(SELECT INITCAP(column2) FROM $database.$table WHERE column1 = 'unicode characters'))";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('line with enclosure', 'second column')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('first', 'something with
 
 double new line')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('columns with
 new line', 'columns with 	tab')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with \n \t \\',
  'second col')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with enclosure \"\", and comma inside text',
  'second column enclosure in text \"\"')";
-            $connection->query($sql);
+            $this->connection->query($sql);
 
             $sql = "INSERT INTO $database.$table VALUES ('column with backslash \ inside',
  'column with backslash and enclosure \\\"\"')";
-            $connection->query($sql);
+            $this->connection->query($sql);
         } catch (\Throwable $exception) {
             print $exception->getMessage();
         }
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInDatabaseName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'database"_name',
+            'tableName' => 'test_1',
+        ];
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['table']['schema'] = 'database"_name';
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInTableName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'te"st_1',
+        ];
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['table']['tableName'] = 'te"st_1';
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyDataWithRestrictedCharacterInColumnName(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'test_1';
+        $configuration['parameters']['table'] = [
+            'schema' => 'ex_teradata_test',
+            'tableName' => 'test_1',
+        ];
+        $configuration['parameters']['columns'] = ['col"umn1'];
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['table']['tableName'] = 'test_1';
-        $configuration['parameters']['columns'] = ['col"umn1'];
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractColumn1FromBasicData(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-export-one-column';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/basic-data-export-one-column';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractWithUserSql(): void
     {
-        $testDirectory = __DIR__ . '/aggregated-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/aggregated-data';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_2';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertAggregatedBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertAggregatedBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-2".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractFromNonExistingDatabase(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'invalid_database';
+        $configuration['parameters']['table'] = [
+            'schema' => 'invalid_database',
+            'tableName' => 'test_1',
+        ];
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
-            'Database "invalid_database" does not exist.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            'Database "invalid_database" does not exist.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-        $configuration['parameters']['table']['schema'] = 'invalid_database';
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractFromNonExistingTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-data';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
-        $table = 'test_1';
-
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
-        $this->insertBasicData($connection, $database, $table);
-
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
-            1,
-            null,
-            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
-        );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
+        $dataDir = __DIR__ . '/empty-data';
+        $configuration = $this->getConfig($dataDir);
+        $configuration['parameters']['outputTable'] = 'invalid_table';
         $configuration['parameters']['table'] = [
             'schema' => 'ex_teradata_test',
             'tableName' => 'invalid_table',
         ];
+        $database = $configuration['parameters']['db']['database'];
+        $table = 'test_1';
 
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
+        $this->insertBasicData($database, $table);
+
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
+            1,
+            null,
+            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL
         );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractEmptyTable(): void
     {
-        $testDirectory = __DIR__ . '/empty-table';
-
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $connection = (new ConnectionFactory())->create(
-            $credentials['host'],
-            $credentials['port'],
-            $credentials['user'],
-            $credentials['#password']
-        );
-        $database = $credentials['database'];
+        $dataDir = __DIR__ . '/empty-table';
+        $configuration = $this->getConfig($dataDir);
+        $database = $configuration['parameters']['db']['database'];
         $table = 'test_1';
 
-        $this->createDatabase($connection, $database);
-        $this->createTable($connection, $database, $table);
+        $this->createDatabase($database);
+        $this->createTable($database, $table);
 
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null,
-            $testDirectory . '/expected/data/out'
+            null
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $configuration['parameters']['db'] = $credentials;
-
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 
     public function testExtractTableWithByteColumn(): void
     {
-        $testDirectory = __DIR__ . '/basic-data-byte-column';
+        $dataDir = __DIR__ . '/basic-data-byte-column';
+        $configuration = $this->getConfig($dataDir, ['database' => 'DBC']);
 
-        $configuration = json_decode((string) file_get_contents($testDirectory . '/config.json'), true);
-        $credentials = $this->getCredentials();
-
-        $specification = new DatadirTestSpecification(
-            $testDirectory . '/source/data',
+        $this->runTestWithCustomConfiguration(
+            $dataDir,
+            $configuration,
             1,
             null,
             'You are probably trying to export one or more columns with data type "byte"'
-            . ' which is not allowed.' . PHP_EOL,
-            $testDirectory . '/expected/data/out'
+            . ' which is not allowed.' . PHP_EOL
         );
-        $tempDatadir = $this->getTempDatadir($specification);
-
-        $credentials['database'] = 'DBC';
-        $configuration['parameters']['db'] = $credentials;
-
-        file_put_contents(
-            $tempDatadir->getTmpFolder() . '/config.json',
-            json_encode($configuration, JSON_PRETTY_PRINT)
-        );
-        $process = $this->runScript($tempDatadir->getTmpFolder());
-
-        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
     }
 }
