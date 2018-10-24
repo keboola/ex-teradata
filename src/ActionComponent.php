@@ -65,12 +65,8 @@ class ActionComponent extends BaseComponent
 
     private function getTablesResponse(Connection $connection, string $database): array
     {
-        $sql = "SELECT tab.TVMName TableName, col.FieldName ColumnName FROM DBC.TVFields col
-JOIN DBC.TVM tab
-ON tab.TVMId = col.TableId
-JOIN DBC.Dbase db
-ON db.DatabaseId = tab.DatabaseId
-WHERE db.DatabaseName = ?
+        $sql = "SELECT TableName, ColumnName FROM DBC.ColumnsV
+WHERE DatabaseName = ?
 ORDER BY TableName, ColumnName";
 
         try {
