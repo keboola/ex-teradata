@@ -78,7 +78,12 @@ JOIN DBC.Dbase db
 ON db.DatabaseId = tab.DatabaseId
 WHERE db.DatabaseName = ?
 ORDER BY TableName, ColumnName";
-        $rows = $connection->query($sql, $database)->fetchAll();
+
+        try {
+            $rows = $connection->query($sql, $database)->fetchAll();
+        } catch (\Throwable $exception) {
+            throw (new ExceptionHandler())->createException($exception);
+        }
 
         /** @var Table[] $tables */
         $tables = [];
