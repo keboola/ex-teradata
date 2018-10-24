@@ -50,6 +50,11 @@ class ExceptionHandler
                 '~A non-numeric value encountered~',
                 'You are probably trying to export one or more columns with data type "byte" which is not allowed.'
             ),
+            new MessageTransformation(
+                '~The user does not have ([\w]+) access to (.+)\.~',
+                'The user does not have "%s" access to "%s".',
+                [1, 2]
+            ),
         ];
     }
 

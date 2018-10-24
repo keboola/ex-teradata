@@ -142,6 +142,22 @@ class ExceptionHandlerTest extends TestCase
         );
     }
 
+    public function testExceptionHandlerWithoutSelectAccessToTable(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[Teradata][ODBC Teradata Driver][Teradata Database](-3523)'
+                . 'The user does not have SELECT access to DBC.TVM. 37000'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'The user does not have "SELECT" access to "DBC.TVM".',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerExportingBytesThrowUserException(): void
     {
         $exception = $this->exceptionHandler->createException(
