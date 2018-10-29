@@ -30,7 +30,8 @@ class CoreComponent extends BaseComponent
         $extractor = new Extractor(
             $connection,
             new CsvWriterFactory(),
-            $exceptionHandler
+            $exceptionHandler,
+            $this->getLogger()
         );
 
         $query = $config->getQuery() ?? $extractorHelper->getExportSql(

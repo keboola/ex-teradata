@@ -8,6 +8,7 @@ use Dibi\Connection;
 use Dibi\Result;
 use Dibi\Row;
 use Keboola\ExTeradata\Factories\CsvWriterFactory;
+use Psr\Log\LoggerInterface;
 
 class Extractor
 {
@@ -20,14 +21,19 @@ class Extractor
     /** @var ExceptionHandler */
     private $exceptionHandler;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     public function __construct(
         Connection $connection,
         CsvWriterFactory $csvWriterFactory,
-        ExceptionHandler $exceptionHandler
+        ExceptionHandler $exceptionHandler,
+        LoggerInterface $logger
     ) {
         $this->connection = $connection;
         $this->csvWriterFactory = $csvWriterFactory;
         $this->exceptionHandler = $exceptionHandler;
+        $this->logger = $logger;
     }
 
     public function extractTable(string $query, string $outputCsvFilePath): void
@@ -41,8 +47,14 @@ class Extractor
         $csvWriter = $this->csvWriterFactory->create($outputCsvFilePath);
         $csvWriter->writeRow($queryResult->getInfo()->getColumnNames());
 
+        $rowNumber = 0;
         foreach ($this->fetchTableRows($queryResult) as $tableRow) {
             $csvWriter->writeRow($tableRow->toArray());
+
+            if ($rowNumber > 0 && $rowNumber % 1000000 === 0) {
+                $this->logger->info(sprintf('%s queries fetched.', $rowNumber));
+            }
+            $rowNumber++;
         }
     }
 
