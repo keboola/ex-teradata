@@ -9,6 +9,7 @@ use Dibi\Connection;
 use Dibi\DriverException;
 use Dibi\Result;
 use Dibi\Row;
+use Keboola\Component\Logger;
 use Keboola\Component\UserException;
 use Keboola\Csv\CsvWriter;
 use Keboola\ExTeradata\Factories\CsvWriterFactory;
@@ -38,7 +39,8 @@ class ExtractorTest extends MockeryTestCase
         $this->extractor = $extractor = new Extractor(
             $this->connectionMock,
             $this->csvWriterFactoryMock,
-            new ExceptionHandler()
+            new ExceptionHandler(),
+            new Logger()
         );
     }
 
@@ -119,16 +121,10 @@ class ExtractorTest extends MockeryTestCase
             ->withAnyArgs()
             ->andReturn($resultMock);
 
-        $extractor = new Extractor(
-            $this->connectionMock,
-            $this->csvWriterFactoryMock,
-            new ExceptionHandler()
-        );
-
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid argument message.');
 
-        $extractor->extractTable(
+        $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
             'table.csv'
         );
