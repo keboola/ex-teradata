@@ -154,7 +154,7 @@ docker-compose build dev
 ## AWS dev server
 You can setup Teradata dev server on AWS with following [Cloudformation](https://aws.amazon.com/cloudformation/) templates:
 - [vpc.json]() - VPC with public subnet ready for Teradata server
-- [teradata.json]() - Developer version of Teradata from [marketplace](https://aws.amazon.com/marketplace/pp/B06Y4Z54R5?qid=1548841874994&sr=0-1&ref_=srh_res_product_title)
+- [teradata.json]() - Developer version of Teradata from [marketplace](https://aws.amazon.com/marketplace/pp/B06Y4Z54R5?qid=1548841874994&sr=0-1&ref_=srh_res_product_title). Use `VpcId` and `Subnet` provided by `VPC` stack.
 
 # Integration
 
