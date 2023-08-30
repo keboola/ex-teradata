@@ -2,7 +2,7 @@ FROM quay.io/keboola/aws-cli
 ARG AWS_SECRET_ACCESS_KEY
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SESSION_TOKEN
-RUN /usr/bin/aws s3 cp s3://teradata-drivers-driverss3bucket-8b7jbdmserup/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
+RUN /usr/bin/aws s3 cp s3://keboola-drivers/teradata/tdodbc1710-17.10.00.17-1.x86_64.deb /tmp/teradata/tdodbc.deb
 
 
 FROM php:7-cli
@@ -23,21 +23,34 @@ RUN apt-get update && apt-get install -y \
         unzip \
         lib32stdc++6 \
         unixodbc \
-        unixodbc-dev
+        unixodbc-dev \
+        libonig-dev
 
 RUN chmod +x /tmp/composer-install.sh \
 	&& /tmp/composer-install.sh
 
-COPY --from=0 /tmp/tdodbc1620-16.20.00.36-1.noarch.deb /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
-RUN dpkg -i /tmp/tdodbc1620-16.20.00.36-1.noarch.deb
+RUN curl -sSLf \
+        -o /usr/local/bin/install-php-extensions \
+        https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+    chmod +x /usr/local/bin/install-php-extensions
 
-COPY docker/odbc.ini /etc/odbc.ini
-COPY docker/odbcinst.ini /etc/odbcinst.ini
+# Teradata ODBC
+COPY --from=0 /tmp/teradata/tdodbc.deb /tmp/teradata/tdodbc.deb
+COPY docker/odbc.ini /tmp/teradata/odbc_td.ini
+COPY docker/odbcinst.ini /tmp/teradata/odbcinst_td.ini
 
-ENV ODBCHOME = /opt/teradata/client/ODBC_64/
-ENV ODBCINI = /opt/teradata/client/ODBC_64/odbc.ini
-ENV ODBCINST = /opt/teradata/client/ODBC_64/odbcinst.ini
-ENV LD_LIBRARY_PATH = /opt/teradata/client/ODBC_64/lib
+RUN dpkg -i /tmp/teradata/tdodbc.deb \
+    && cat /tmp/teradata/odbc_td.ini >> /etc/odbc.ini \
+    && cat /tmp/teradata/odbcinst_td.ini >> /etc/odbcinst.ini \
+    && rm -r /tmp/teradata \
+    && docker-php-ext-configure pdo_odbc --with-pdo-odbc=unixODBC,/usr \
+    && install-php-extensions pdo_odbc odbc \
+    && docker-php-source delete
+
+ENV ODBCHOME=/opt/teradata/client/ODBC_64/
+ENV ODBCINI=/opt/teradata/client/ODBC_64/odbc.ini
+ENV ODBCINST=/opt/teradata/client/ODBC_64/odbcinst.ini
+ENV LD_LIBRARY_PATH=/opt/teradata/client/ODBC_64/lib
 
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8

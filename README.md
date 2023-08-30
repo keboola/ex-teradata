@@ -1,9 +1,5 @@
 # Teradata Extractor
 
-[![Build Status](https://travis-ci.com/keboola/ex-teradata.svg?branch=master)](https://travis-ci.com/keboola/ex-teradata)
-[![Code Climate](https://codeclimate.com/github/keboola/ex-teradata/badges/gpa.svg)](https://codeclimate.com/github/keboola/ex-teradata)
-[![Test Coverage](https://codeclimate.com/github/keboola/ex-teradata/badges/coverage.svg)](https://codeclimate.com/github/keboola/ex-teradata/coverage)
-
 Keboola Connection Extractor for [Teradata](https://www.teradata.com/)
 
 # Configuration
