@@ -55,6 +55,17 @@ class ExceptionHandler
                 'The user does not have "%s" access to "%s".',
                 [1, 2]
             ),
+            new MessageTransformation(
+                '~Teradata DatabaseFunction \'([^\']+)\' called with an ' .
+                'invalid number or type of parameters~',
+                'Teradata DatabaseFunction "%s" called with an ' .
+                'invalid number or type of parameters.',
+                [1]
+            ),
+            new MessageTransformation(
+                '~Internal Error \(Exception\)~',
+                'Teradata Internal Error.'
+            ),
         ];
     }
 
