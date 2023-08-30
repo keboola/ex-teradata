@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\ExTeradata\Tests\Unit\src;
+namespace Keboola\ExTeradata\Tests\Unit;
 
 use DG\BypassFinals;
 use Dibi\Connection;
@@ -12,9 +12,9 @@ use Dibi\Row;
 use Keboola\Component\Logger;
 use Keboola\Component\UserException;
 use Keboola\Csv\CsvWriter;
-use Keboola\ExTeradata\Factories\CsvWriterFactory;
 use Keboola\ExTeradata\ExceptionHandler;
 use Keboola\ExTeradata\Extractor;
+use Keboola\ExTeradata\Factories\CsvWriterFactory;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
 
