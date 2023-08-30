@@ -158,6 +158,36 @@ class ExceptionHandlerTest extends TestCase
         );
     }
 
+    public function testExceptionHandlerInvalidParameters(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[Teradata][ODBC Teradata Driver]Teradata DatabaseFunction \'TO_DATE\' called with an ' .
+                'invalid number or type of parameters S1000'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Teradata DatabaseFunction "TO_DATE" called with an ' .
+            'invalid number or type of parameters.',
+            $exception->getMessage()
+        );
+    }
+
+    public function testExceptionHandlerInternalError(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException('[Teradata][ODBC Teradata Driver] (6) Internal Error (Exception). S1000')
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Teradata Internal Error.',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerExportingBytesThrowUserException(): void
     {
         $exception = $this->exceptionHandler->createException(
