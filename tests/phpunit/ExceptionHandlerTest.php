@@ -188,6 +188,20 @@ class ExceptionHandlerTest extends TestCase
         );
     }
 
+    public function testExceptionHandlerLogonsAreOnlyEnabledForUser(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException('[Teradata][ODBC Teradata Driver][Teradata Database] (210) Logons are only ' .
+                'enabled for user DBC. FailCode = -3055 S1000')
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Logons are only enabled for user DBC.',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerExportingBytesThrowUserException(): void
     {
         $exception = $this->exceptionHandler->createException(

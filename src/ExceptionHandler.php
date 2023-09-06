@@ -66,6 +66,11 @@ class ExceptionHandler
                 '~Internal Error \(Exception\)~',
                 'Teradata Internal Error.'
             ),
+            new MessageTransformation(
+                '~Logons are only enabled for user (.+)\.~',
+                'Logons are only enabled for user %s.',
+                [1]
+            ),
         ];
     }
 
