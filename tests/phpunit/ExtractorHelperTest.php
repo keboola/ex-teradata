@@ -10,8 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ExtractorHelperTest extends TestCase
 {
-    /** @var ExtractorHelper */
-    private $extractorHelper;
+    private ExtractorHelper $extractorHelper;
 
     public function setUp(): void
     {
@@ -30,7 +29,7 @@ class ExtractorHelperTest extends TestCase
     {
         $this->assertEquals(
             'SELECT * FROM "database_name"."table"',
-            $this->extractorHelper->getExportSql('database_name', 'table', [])
+            $this->extractorHelper->getExportSql('database_name', 'table', []),
         );
     }
 
@@ -44,8 +43,8 @@ class ExtractorHelperTest extends TestCase
                 [
                     'column1',
                     'column2',
-                ]
-            )
+                ],
+            ),
         );
     }
 }

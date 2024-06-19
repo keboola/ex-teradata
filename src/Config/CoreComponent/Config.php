@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Config\CoreComponent;
 
+use InvalidArgumentException;
 use Keboola\Component\Config\BaseConfig;
 
 class Config extends BaseConfig
@@ -37,7 +38,7 @@ class Config extends BaseConfig
     {
         try {
             return $this->getValue(['parameters', 'query']);
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
@@ -46,7 +47,7 @@ class Config extends BaseConfig
     {
         try {
             return $this->getValue(['parameters', 'table', 'schema']);
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
@@ -55,11 +56,14 @@ class Config extends BaseConfig
     {
         try {
             return $this->getValue(['parameters', 'table', 'tableName']);
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
 
+    /**
+     * @return string[]
+     */
     public function getColumns(): array
     {
         return $this->getValue(['parameters', 'columns']);
@@ -70,6 +74,9 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'incremental']);
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getPrimaryKey(): array
     {
         return $this->getValue(['parameters', 'primaryKey']);

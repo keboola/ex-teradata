@@ -10,8 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
-    /** @var ConfigDefinition */
-    private $configDefinition;
+    private ConfigDefinition $configDefinition;
 
     public function setUp(): void
     {
@@ -39,7 +38,7 @@ class ConfigTest extends TestCase
 
         $config = new Config(
             $parameters,
-            $this->configDefinition
+            $this->configDefinition,
         );
 
         $this->assertEquals('hostname', $config->getHost());
@@ -78,7 +77,7 @@ class ConfigTest extends TestCase
 
         $config = new Config(
             $parameters,
-            $this->configDefinition
+            $this->configDefinition,
         );
 
         $this->assertEquals('hostname', $config->getHost());
@@ -124,7 +123,7 @@ class ConfigTest extends TestCase
 
         $config = new Config(
             $parameters,
-            $this->configDefinition
+            $this->configDefinition,
         );
 
         $this->assertEquals('hostname', $config->getHost());

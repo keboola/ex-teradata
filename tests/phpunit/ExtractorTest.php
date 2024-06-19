@@ -7,52 +7,55 @@ namespace Keboola\ExTeradata\Tests\Unit;
 use DG\BypassFinals;
 use Dibi\Connection;
 use Dibi\DriverException;
+use Dibi\Reflection\Result as DibiResult;
 use Dibi\Result;
 use Dibi\Row;
+use InvalidArgumentException;
 use Keboola\Component\Logger;
 use Keboola\Component\UserException;
 use Keboola\Csv\CsvWriter;
 use Keboola\ExTeradata\ExceptionHandler;
 use Keboola\ExTeradata\Extractor;
 use Keboola\ExTeradata\Factories\CsvWriterFactory;
+use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
 
 class ExtractorTest extends MockeryTestCase
 {
-    /** @var Connection|MockInterface */
-    private $connectionMock;
+    /** @var Connection|MockInterface|(MockInterface&Connection) */
+    private Connection|MockInterface $connectionMock;
 
-    /** @var CsvWriterFactory|MockInterface */
-    private $csvWriterFactoryMock;
+    /** @var CsvWriterFactory|MockInterface|(CsvWriterFactory&MockInterface) */
+    private MockInterface|CsvWriterFactory $csvWriterFactoryMock;
 
-    /** @var Extractor */
-    private $extractor;
+    private Extractor $extractor;
 
     public function setUp(): void
     {
         parent::setUp();
 
         BypassFinals::enable();
-        $this->connectionMock = \Mockery::mock(Connection::class);
-        $this->csvWriterFactoryMock = \Mockery::mock(CsvWriterFactory::class);
-        $this->extractor = $extractor = new Extractor(
+        $this->connectionMock = Mockery::mock(Connection::class);
+        $this->csvWriterFactoryMock = Mockery::mock(CsvWriterFactory::class);
+        $this->extractor = new Extractor(
             $this->connectionMock,
             $this->csvWriterFactoryMock,
             new ExceptionHandler(),
-            new Logger()
+            new Logger(),
         );
     }
 
     public function testExtractTableFromNonExistingDatabaseThrowsUserException(): void
     {
+        //@phpstan-ignore-next-line
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
+            ->with('SELECT * FROM database_name.table')
             ->andThrow(
                 DriverException::class,
                 '[Teradata][ODBC Teradata Driver][Teradata Database](-3802)Database'
-                . ' \'database_name\' does not exist. S0002'
+                . ' \'database_name\' does not exist. S0002',
             );
 
         $this->expectException(UserException::class);
@@ -60,19 +63,20 @@ class ExtractorTest extends MockeryTestCase
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
-            'table.csv'
+            'table.csv',
         );
     }
 
     public function testExtractTableFromNonExistingTableThrowsUserException(): void
     {
+        //@phpstan-ignore-next-line
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
+            ->with('SELECT * FROM database_name.table')
             ->andThrow(
                 DriverException::class,
                 '[Teradata][ODBC Teradata Driver][Teradata Database](-3807)Object'
-                . ' \'database_name.table\' does not exist. S0002'
+                . ' \'database_name.table\' does not exist. S0002',
             );
 
         $this->expectException(UserException::class);
@@ -80,65 +84,65 @@ class ExtractorTest extends MockeryTestCase
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
-            'table.csv'
+            'table.csv',
         );
     }
 
     public function testExtractTableFetchFailsOnUnhandledExceptionThrowRuntimeException(): void
     {
-        $csvWriterMock = \Mockery::mock(CsvWriter::class);
+        $csvWriterMock = Mockery::mock(CsvWriter::class);
         $csvWriterMock->shouldReceive('writeRow')
             ->once()
             ->with(['column1', 'column2'])
             ->andReturnNull();
-
+        //@phpstan-ignore-next-line
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
             ->andReturn($csvWriterMock);
 
-        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock = Mockery::mock(DibiResult::class);
         $getInfoResultMock->shouldReceive('getColumnNames')
             ->once()
             ->withNoArgs()
             ->andReturn(['column1', 'column2']);
 
-        $resultMock = \Mockery::mock(Result::class);
+        $resultMock = Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
             ->andThrow(
-                \InvalidArgumentException::class,
-                'Invalid argument message.'
+                InvalidArgumentException::class,
+                'Invalid argument message.',
             );
         $resultMock->shouldReceive('getInfo')
             ->once()
             ->withNoArgs()
             ->andReturn($getInfoResultMock);
-
+        //@phpstan-ignore-next-line
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
             ->withAnyArgs()
             ->andReturn($resultMock);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid argument message.');
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
-            'table.csv'
+            'table.csv',
         );
     }
 
     public function testExtractTableWithEmptyResultSuccessfully(): void
     {
-        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock = Mockery::mock(DibiResult::class);
         $getInfoResultMock->shouldReceive('getColumnNames')
             ->once()
             ->withNoArgs()
             ->andReturn(['column1', 'column2']);
 
-        $resultMock = \Mockery::mock(Result::class);
+        $resultMock = Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->once()
             ->withNoArgs()
@@ -148,25 +152,25 @@ class ExtractorTest extends MockeryTestCase
             ->withNoArgs()
             ->andReturn($getInfoResultMock);
 
-        $csvWriterMock = \Mockery::mock(CsvWriter::class);
+        $csvWriterMock = Mockery::mock(CsvWriter::class);
         $csvWriterMock->shouldReceive('writeRow')
             ->once()
             ->with(['column1', 'column2'])
             ->andReturnNull();
-
+        //@phpstan-ignore-next-line
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
             ->andReturn($csvWriterMock);
-
+        //@phpstan-ignore-next-line
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
+            ->with('SELECT * FROM database_name.table')
             ->andReturn($resultMock);
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
-            'table.csv'
+            'table.csv',
         );
     }
 
@@ -183,13 +187,13 @@ class ExtractorTest extends MockeryTestCase
             ]),
         ];
 
-        $getInfoResultMock = \Mockery::mock(\Dibi\Reflection\Result::class);
+        $getInfoResultMock = Mockery::mock(DibiResult::class);
         $getInfoResultMock->shouldReceive('getColumnNames')
             ->once()
             ->withNoArgs()
             ->andReturn(['column1', 'column2']);
 
-        $resultMock = \Mockery::mock(Result::class);
+        $resultMock = Mockery::mock(Result::class);
         $resultMock->shouldReceive('fetch')
             ->times(3)
             ->withNoArgs()
@@ -203,24 +207,26 @@ class ExtractorTest extends MockeryTestCase
             ->withNoArgs()
             ->andReturn($getInfoResultMock);
 
-        $csvWriterMock = \Mockery::spy(CsvWriter::class);
+        $csvWriterMock = Mockery::spy(CsvWriter::class);
         $csvWriterMock->shouldReceive('writeRow')
             ->times(3)
             ->withAnyArgs()
             ->andReturnNull();
+        //@phpstan-ignore-next-line
         $this->csvWriterFactoryMock->shouldReceive('create')
             ->once()
             ->withAnyArgs()
             ->andReturn($csvWriterMock);
 
+        //@phpstan-ignore-next-line
         $this->connectionMock->shouldReceive('nativeQuery')
             ->once()
-            ->with("SELECT * FROM database_name.table")
+            ->with('SELECT * FROM database_name.table')
             ->andReturn($resultMock);
 
         $this->extractor->extractTable(
             'SELECT * FROM database_name.table',
-            'table.csv'
+            'table.csv',
         );
     }
 }

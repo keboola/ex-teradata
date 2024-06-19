@@ -11,6 +11,7 @@ use Keboola\ExTeradata\Config\ActionComponent\ConfigDefinition;
 use Keboola\ExTeradata\Factories\ConnectionFactory;
 use Keboola\ExTeradata\Response\Column;
 use Keboola\ExTeradata\Response\Table;
+use Throwable;
 
 class ActionComponent extends BaseComponent
 {
@@ -23,7 +24,7 @@ class ActionComponent extends BaseComponent
             $config->getHost(),
             $config->getPort(),
             $config->getUser(),
-            $config->getPassword()
+            $config->getPassword(),
         );
 
         switch ($config->getAction()) {
@@ -48,30 +49,30 @@ class ActionComponent extends BaseComponent
 
     private function testConnection(Connection $connection): void
     {
-        $connection->query("SELECT 1");
-        print json_encode(['status' => 'success'], JSON_PRETTY_PRINT);
+        $connection->query('SELECT 1');
+        print json_encode(['status' => 'success'], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
     }
 
     private function getTables(Connection $connection, string $database): void
     {
-        print json_encode(
-            [
-                'status' => 'success',
-                'tables' => $this->getTablesResponse($connection, $database),
-            ],
-            JSON_PRETTY_PRINT
-        );
+        print json_encode([
+            'status' => 'success',
+            'tables' => $this->getTablesResponse($connection, $database),
+        ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
     }
 
+    /**
+     * @return Table[]
+     */
     private function getTablesResponse(Connection $connection, string $database): array
     {
-        $sql = "SELECT TableName, ColumnName FROM DBC.ColumnsV
+        $sql = 'SELECT TableName, ColumnName FROM DBC.ColumnsV
 WHERE DatabaseName = ?
-ORDER BY TableName, ColumnName";
+ORDER BY TableName, ColumnName';
 
         try {
             $rows = $connection->query($sql, $database)->fetchAll();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw (new ExceptionHandler())->createException($exception);
         }
 

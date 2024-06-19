@@ -1,5 +1,7 @@
 parameters:
     ignoreErrors:
-        - '#Calling method end\(\) on possibly null value of type Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface|null.#'
+        - '#Cannot call method arrayNode\(\) on Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\|null\.#'
+        - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::addDefaultsIfNotSet\(\).#'
 includes:
 	- vendor/phpstan/phpstan-mockery/extension.neon
+	- phpstan-baseline.neon

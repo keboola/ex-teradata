@@ -6,6 +6,7 @@ namespace Keboola\ExTeradata\Factories;
 
 use Dibi\Connection;
 use Keboola\ExTeradata\ExceptionHandler;
+use Throwable;
 
 class ConnectionFactory
 {
@@ -18,7 +19,7 @@ class ConnectionFactory
                 'username' => $user,
                 'password' => $password,
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw (new ExceptionHandler())->createException($exception);
         }
     }

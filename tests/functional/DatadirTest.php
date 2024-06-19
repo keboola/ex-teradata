@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Keboola\ExTeradata\Tests\Functional;
 
 use Dibi\Connection;
+use Exception;
 use Keboola\Component\JsonHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Keboola\ExTeradata\Factories\ConnectionFactory;
+use Throwable;
 
 class DatadirTest extends AbstractDatadirTestCase
 {
-    /** @var Connection */
-    private $connection;
+    private Connection $connection;
 
     public function setUp(): void
     {
@@ -22,28 +23,31 @@ class DatadirTest extends AbstractDatadirTestCase
             $credentials['host'],
             $credentials['port'],
             $credentials['user'],
-            $credentials['#password']
+            $credentials['#password'],
         );
     }
 
+    /**
+     * @return array{host: string, port: int, user: string, "#password": string, database: string}
+     */
     private function getCredentials(): array
     {
         $requiredCredentials = ['TERADATA_HOST', 'TERADATA_USERNAME', 'TERADATA_PASSWORD', 'TERADATA_DATABASE'];
         foreach ($requiredCredentials as $requiredCredential) {
-            if (empty(getenv($requiredCredential))) {
-                throw new \Exception(sprintf(
+            if (getenv($requiredCredential) === '' || getenv($requiredCredential) === false) {
+                throw new Exception(sprintf(
                     'Variable \'%s\' must be set.',
-                    $requiredCredential
+                    $requiredCredential,
                 ));
             }
         }
 
         return [
-            'host' => getenv('TERADATA_HOST'),
+            'host' => (string) getenv('TERADATA_HOST'),
             'port' => (int) getenv('TERADATA_PORT'),
-            'user' => getenv('TERADATA_USERNAME'),
-            '#password' => getenv('TERADATA_PASSWORD'),
-            'database' => getenv('TERADATA_DATABASE'),
+            'user' => (string) getenv('TERADATA_USERNAME'),
+            '#password' => (string) getenv('TERADATA_PASSWORD'),
+            'database' => (string) getenv('TERADATA_DATABASE'),
         ];
     }
 
@@ -55,10 +59,10 @@ class DatadirTest extends AbstractDatadirTestCase
         try {
             $this->connection->query('DELETE DATABASE ' . $database);
             $this->connection->query('DROP DATABASE ' . $database);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if (!preg_match(
                 '~Database \'(.+)\' does not exist. S0002~',
-                $exception->getMessage()
+                $exception->getMessage(),
             )) {
                 throw $exception;
             }
@@ -70,7 +74,7 @@ class DatadirTest extends AbstractDatadirTestCase
         try {
             $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
             $this->connection->query($sql);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             print $exception->getMessage();
         }
     }
@@ -80,7 +84,17 @@ class DatadirTest extends AbstractDatadirTestCase
         try {
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
             $this->connection->query($sql);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
+            print $exception->getMessage();
+        }
+    }
+
+    private function createTableVarchar(string $database, string $table): void
+    {
+        try {
+            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
+            $this->connection->query($sql);
+        } catch (Throwable $exception) {
             print $exception->getMessage();
         }
     }
@@ -93,7 +107,7 @@ class DatadirTest extends AbstractDatadirTestCase
 
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
             $this->connection->query($sql);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             print $exception->getMessage();
         }
     }
@@ -112,11 +126,25 @@ class DatadirTest extends AbstractDatadirTestCase
 
             $sql = "INSERT INTO $database.$table  VALUES ('row4', 1)";
             $this->connection->query($sql);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             print $exception->getMessage();
         }
     }
 
+    /**
+     * @param array<mixed> $customDbNode
+     * @return array{
+     *      parameters: array{
+     *       db: array{
+     *           host: string,
+     *           port: int,
+     *           user: string,
+     *           "#password": string,
+     *           database: string
+     *           }
+     *      }
+     *  }
+     */
     private function getConfig(string $dataDir, array $customDbNode = []): array
     {
         $configuration = JsonHelper::readFile($dataDir . '/config.json');
@@ -154,7 +182,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             0,
             JsonHelper::encode($response),
-            null
+            null,
         );
     }
 
@@ -176,7 +204,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL
+            'The Teradata server can\'t currently be reached over this network.' . PHP_EOL,
         );
     }
 
@@ -198,7 +226,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL
+            'The User or Password is invalid.' . PHP_EOL,
         );
     }
 
@@ -220,7 +248,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'The User or Password is invalid.' . PHP_EOL
+            'The User or Password is invalid.' . PHP_EOL,
         );
     }
 
@@ -235,7 +263,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL
+            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
         );
     }
 
@@ -257,7 +285,7 @@ class DatadirTest extends AbstractDatadirTestCase
             1,
             null,
             'Invalid configuration for path "root.parameters": The \'query\' or'
-            . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL
+            . ' \'table.schema\' with \'table.tableName\' option is required.' . PHP_EOL,
         );
     }
 
@@ -277,7 +305,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null
+            null,
         );
     }
 
@@ -302,7 +330,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL
+            'Object "database"_name" contain restricted character \'"\'.' . PHP_EOL,
         );
     }
 
@@ -327,7 +355,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL
+            'Object "te"st_1" contain restricted character \'"\'.' . PHP_EOL,
         );
     }
 
@@ -353,7 +381,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL
+            'Object "col"umn1" contain restricted character \'"\'.' . PHP_EOL,
         );
     }
 
@@ -373,7 +401,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null
+            null,
         );
     }
 
@@ -393,7 +421,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             0,
             'Extracted table into: "out.c-main.test-2".' . PHP_EOL,
-            null
+            null,
         );
     }
 
@@ -418,7 +446,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'Database "invalid_database" does not exist.' . PHP_EOL
+            'Database "invalid_database" does not exist.' . PHP_EOL,
         );
     }
 
@@ -443,7 +471,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL
+            'Table "invalid_table" does not exist in database "ex_teradata_test".' . PHP_EOL,
         );
     }
 
@@ -462,7 +490,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             0,
             'Extracted table into: "out.c-main.test-1".' . PHP_EOL,
-            null
+            null,
         );
     }
 
@@ -476,8 +504,8 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'You are probably trying to export one or more columns with data type "byte"'
-            . ' which is not allowed.' . PHP_EOL
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+            'You are probably trying to export one or more columns with data type "byte" which is not allowed.' . PHP_EOL,
         );
     }
 }

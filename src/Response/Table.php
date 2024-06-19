@@ -4,31 +4,24 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Response;
 
-class Table implements \JsonSerializable
+use JsonSerializable;
+
+class Table implements JsonSerializable
 {
-    /** @var string */
-    private $schema;
-
-    /** @var string */
-    private $tableName;
-
-    /** @var array|\JsonSerializable[] */
-    private $columns;
-
     // private $autoIncrement;
 
     // private $rowCount;
 
+    /**
+     * @param Column[] $columns
+     */
     public function __construct(
-        string $schema,
-        string $tableName,
-        array $columns = []
+        private string $schema,
+        private string $tableName,
+        private array $columns = [],
         // int $autoIncrement,
         // int $rowCount
     ) {
-        $this->schema = $schema;
-        $this->tableName = $tableName;
-        $this->columns = $columns;
         // $this->autoIncrement = $autoIncrement;
         // $this->rowCount = $rowCount;
     }
@@ -38,6 +31,14 @@ class Table implements \JsonSerializable
         $this->columns[] = $column;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return array{
+     *     schema: string,
+     *     name: string,
+     *     columns: Column[]
+     * }
+     */
     public function jsonSerialize(): array
     {
         return [

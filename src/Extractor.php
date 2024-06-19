@@ -7,40 +7,26 @@ namespace Keboola\ExTeradata;
 use Dibi\Connection;
 use Dibi\Result;
 use Dibi\Row;
+use Iterator;
 use Keboola\ExTeradata\Factories\CsvWriterFactory;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class Extractor
 {
-    /** @var Connection */
-    private $connection;
-
-    /** @var CsvWriterFactory */
-    private $csvWriterFactory;
-
-    /** @var ExceptionHandler */
-    private $exceptionHandler;
-
-    /** @var LoggerInterface */
-    private $logger;
-
     public function __construct(
-        Connection $connection,
-        CsvWriterFactory $csvWriterFactory,
-        ExceptionHandler $exceptionHandler,
-        LoggerInterface $logger
+        private Connection $connection,
+        private CsvWriterFactory $csvWriterFactory,
+        private ExceptionHandler $exceptionHandler,
+        private LoggerInterface $logger,
     ) {
-        $this->connection = $connection;
-        $this->csvWriterFactory = $csvWriterFactory;
-        $this->exceptionHandler = $exceptionHandler;
-        $this->logger = $logger;
     }
 
     public function extractTable(string $query, string $outputCsvFilePath): void
     {
         try {
             $queryResult = $this->connection->nativeQuery($query);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw $this->exceptionHandler->createException($exception);
         }
 
@@ -59,18 +45,18 @@ class Extractor
     }
 
     /**
-     * @param Result $queryResult
      *
      * @return \Iterator|Row[]
      * @throws \Throwable
      */
-    public function fetchTableRows(Result $queryResult): \Iterator
+    public function fetchTableRows(Result $queryResult): Iterator
     {
         try {
             while ($row = $queryResult->fetch()) {
+                assert($row instanceof Row);
                 yield $row;
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw $this->exceptionHandler->createException($exception);
         }
     }
