@@ -12,7 +12,7 @@ use Keboola\ExTeradata\Factories\CsvWriterFactory;
 
 class CoreComponent extends BaseComponent
 {
-    public function run(): void
+    protected function run(): void
     {
         /** @var Config $config */
         $config = $this->getConfig();

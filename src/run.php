@@ -24,7 +24,7 @@ try {
         'run' => new CoreComponent($logger),
         default => new ActionComponent($logger),
     };
-    $app->run();
+    $app->execute();
     exit(0);
 } catch (UserException $e) {
     $logger->error($e->getMessage());

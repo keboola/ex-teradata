@@ -15,26 +15,28 @@ use Throwable;
 
 class ActionComponent extends BaseComponent
 {
-    public function run(): void
+    private function getConnection(): Connection
     {
         /** @var Config $config */
         $config = $this->getConfig();
 
-        $connection = (new ConnectionFactory())->create(
+        return (new ConnectionFactory())->create(
             $config->getHost(),
             $config->getPort(),
             $config->getUser(),
             $config->getPassword(),
         );
+    }
 
-        switch ($config->getAction()) {
-            case 'testConnection':
-                $this->testConnection($connection);
-                break;
-            case 'getTables':
-                $this->getTables($connection, $config->getDatabase());
-                break;
-        }
+    /**
+     * @return array<string, string>
+     */
+    protected function getSyncActions(): array
+    {
+        return [
+            'testConnection' => 'testConnection',
+            'getTables' => 'getTables',
+        ];
     }
 
     protected function getConfigClass(): string
@@ -47,18 +49,28 @@ class ActionComponent extends BaseComponent
         return ConfigDefinition::class;
     }
 
-    private function testConnection(Connection $connection): void
+    /**
+     * @return array{status: string}
+     */
+    public function testConnection(): array
     {
-        $connection->query('SELECT 1');
-        print json_encode(['status' => 'success'], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+        $this->getConnection()->query('SELECT 1');
+        return ['status' => 'success'];
     }
 
-    private function getTables(Connection $connection, string $database): void
+    /**
+     * @return array{status: string, tables: Table[]}
+     */
+    public function getTables(): array
     {
-        print json_encode([
+        $connection = $this->getConnection();
+        $config = $this->getConfig();
+        assert($config instanceof Config);
+        $database = $config->getDatabase();
+        return [
             'status' => 'success',
             'tables' => $this->getTablesResponse($connection, $database),
-        ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+        ];
     }
 
     /**

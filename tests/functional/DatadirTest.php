@@ -75,7 +75,9 @@ class DatadirTest extends AbstractDatadirTestCase
             $sql = sprintf('CREATE DATABASE %s AS PERMANENT=1e9', $database);
             $this->connection->query($sql);
         } catch (Throwable $exception) {
+            print PHP_EOL;
             print $exception->getMessage();
+            print PHP_EOL;
         }
     }
 
@@ -85,17 +87,9 @@ class DatadirTest extends AbstractDatadirTestCase
             $sql = "CREATE TABLE $database.$table (column1 VARCHAR (32), column2 INTEGER)";
             $this->connection->query($sql);
         } catch (Throwable $exception) {
+            print PHP_EOL;
             print $exception->getMessage();
-        }
-    }
-
-    private function createTableVarchar(string $database, string $table): void
-    {
-        try {
-            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
-            $this->connection->query($sql);
-        } catch (Throwable $exception) {
-            print $exception->getMessage();
+            print PHP_EOL;
         }
     }
 
@@ -108,7 +102,9 @@ class DatadirTest extends AbstractDatadirTestCase
             $sql = "INSERT INTO $database.$table  VALUES ('row2', 2)";
             $this->connection->query($sql);
         } catch (Throwable $exception) {
+            print PHP_EOL;
             print $exception->getMessage();
+            print PHP_EOL;
         }
     }
 
@@ -127,7 +123,9 @@ class DatadirTest extends AbstractDatadirTestCase
             $sql = "INSERT INTO $database.$table  VALUES ('row4', 1)";
             $this->connection->query($sql);
         } catch (Throwable $exception) {
+            print PHP_EOL;
             print $exception->getMessage();
+            print PHP_EOL;
         }
     }
 
@@ -263,7 +261,7 @@ class DatadirTest extends AbstractDatadirTestCase
             $configuration,
             1,
             null,
-            'The child node "db" at path "root.parameters" must be configured.' . PHP_EOL,
+            'The child config "db" under "root.parameters" must be configured.' . PHP_EOL,
         );
     }
 

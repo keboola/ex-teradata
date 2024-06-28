@@ -36,7 +36,7 @@ class ExceptionHandler
             ),
             new MessageTransformation(
                 '~Please check Teradata Database Gateway configurations~',
-                'The Teradata server can\'t currently be reached over this network.'
+                'The Teradata server can\'t currently be reached over this network.',
             ),
             new MessageTransformation(
                 '~The UserId, Password or Account is invalid.~',
