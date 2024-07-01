@@ -85,16 +85,6 @@ class DatadirTest extends AbstractDatadirTestCase
         }
     }
 
-    private function createTableVarchar(string $database, string $table): void
-    {
-        try {
-            $sql = "CREATE TABLE $database.$table (column1 VARCHAR (255), column2 VARCHAR (255))";
-            $this->connection->query($sql);
-        } catch (\Throwable $exception) {
-            print $exception->getMessage();
-        }
-    }
-
     private function insertBasicData(string $database, string $table): void
     {
         try {
