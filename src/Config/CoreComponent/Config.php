@@ -4,40 +4,41 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Config\CoreComponent;
 
+use InvalidArgumentException;
 use Keboola\Component\Config\BaseConfig;
 
 class Config extends BaseConfig
 {
     public function getHost(): string
     {
-        return $this->getValue(['parameters', 'db', 'host']);
+        return $this->getStringValue(['parameters', 'db', 'host']);
     }
 
     public function getPort(): int
     {
-        return $this->getValue(['parameters', 'db', 'port']);
+        return $this->getIntValue(['parameters', 'db', 'port']);
     }
 
     public function getUser(): string
     {
-        return $this->getValue(['parameters', 'db', 'user']);
+        return $this->getStringValue(['parameters', 'db', 'user']);
     }
 
     public function getPassword(): string
     {
-        return $this->getValue(['parameters', 'db', '#password']);
+        return $this->getStringValue(['parameters', 'db', '#password']);
     }
 
     public function getOutputTable(): string
     {
-        return $this->getValue(['parameters', 'outputTable']);
+        return $this->getStringValue(['parameters', 'outputTable']);
     }
 
     public function getQuery(): ?string
     {
         try {
-            return $this->getValue(['parameters', 'query']);
-        } catch (\InvalidArgumentException $exception) {
+            return $this->getStringValue(['parameters', 'query']);
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
@@ -45,8 +46,8 @@ class Config extends BaseConfig
     public function getSchema(): ?string
     {
         try {
-            return $this->getValue(['parameters', 'table', 'schema']);
-        } catch (\InvalidArgumentException $exception) {
+            return $this->getStringValue(['parameters', 'table', 'schema']);
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
@@ -54,15 +55,18 @@ class Config extends BaseConfig
     public function getTableName(): ?string
     {
         try {
-            return $this->getValue(['parameters', 'table', 'tableName']);
-        } catch (\InvalidArgumentException $exception) {
+            return $this->getStringValue(['parameters', 'table', 'tableName']);
+        } catch (InvalidArgumentException) {
             return null;
         }
     }
 
+    /**
+     * @return string[]
+     */
     public function getColumns(): array
     {
-        return $this->getValue(['parameters', 'columns']);
+        return $this->getArrayValue(['parameters', 'columns']);
     }
 
     public function getIncremental(): bool
@@ -70,8 +74,11 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'incremental']);
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getPrimaryKey(): array
     {
-        return $this->getValue(['parameters', 'primaryKey']);
+        return $this->getArrayValue(['parameters', 'primaryKey']);
     }
 }

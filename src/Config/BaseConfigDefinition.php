@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Config;
 
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Keboola\Component\Config\BaseConfigDefinition as BaseComponentConfigDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class BaseConfigDefinition extends \Keboola\Component\Config\BaseConfigDefinition
+class BaseConfigDefinition extends BaseComponentConfigDefinition
 {
-    protected function getDbNode(): ArrayNodeDefinition
+    protected function getDbNode(): NodeDefinition
     {
-        $builder = new TreeBuilder();
+        $builder = new TreeBuilder('db');
 
-        /** @var ArrayNodeDefinition $node */
-        $node = $builder->root('db');
+        $node = $builder->getRootNode();
 
         // @formatter:off
+        /** @noinspection NullPointerExceptionInspection */
         $node
             ->isRequired()
             ->addDefaultsIfNotSet()

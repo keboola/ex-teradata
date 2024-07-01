@@ -8,20 +8,11 @@ use Keboola\Component\UserException;
 
 class MessageTransformation
 {
-    /** @var string */
-    private $pattern;
-
-    /** @var string */
-    private $message;
-
-    /** @var array */
-    private $argumentIndexes;
-
-    public function __construct(string $pattern, string $message, array $argumentIndexes = [])
+    /**
+     * @param array<mixed> $argumentIndexes
+     */
+    public function __construct(private string $pattern, private string $message, private array $argumentIndexes = [])
     {
-        $this->pattern = $pattern;
-        $this->message = $message;
-        $this->argumentIndexes = $argumentIndexes;
     }
 
     public function getPattern(): string
@@ -29,6 +20,9 @@ class MessageTransformation
         return $this->pattern;
     }
 
+    /**
+     * @param array<mixed> $arguments
+     */
     public function getUserException(array $arguments = []): UserException
     {
         $args = [];
@@ -36,6 +30,7 @@ class MessageTransformation
             $args[] = $arguments[$argumentIndex];
         }
 
+        /** @phpstan-ignore-next-line */
         return new UserException(vsprintf($this->message, $args));
     }
 }

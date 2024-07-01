@@ -3,22 +3,23 @@
     "description": "Teradata database extractor",
     "license": "MIT",
     "require": {
-        "php": "^7.1",
-        "dibi/dibi": "^4.0",
+        "php": "^8",
+        "dibi/dibi": "^4",
         "keboola/csv": "^2.0",
-        "keboola/php-component": "^5.0"
+        "keboola/php-component": "^9"
     },
     "require-dev": {
-        "dg/bypass-finals": "^1.1",
-        "jakub-onderka/php-parallel-lint": "^1.0",
-        "keboola/coding-standard": "^6.0",
-        "keboola/datadir-tests": "^2.2",
-        "keboola/php-temp": "^1.0",
-        "mockery/mockery": "^1.1",
-        "phpstan/phpstan-mockery": "^0.10",
-        "phpstan/phpstan-shim": "^0.10",
-        "phpunit/phpunit": "^7.0",
-        "symfony/process": "^4.0"
+        "dg/bypass-finals": "^1",
+        "keboola/coding-standard": "^15",
+        "keboola/datadir-tests": "^5.6",
+        "keboola/php-temp": "^2",
+        "mockery/mockery": "^1",
+        "php-parallel-lint/php-parallel-lint": "^1",
+        "phpstan/phpstan": "^1",
+        "phpstan/phpstan-mockery": "^1",
+        "phpunit/phpunit": "^9",
+        "rector/rector": "^1.1",
+        "symfony/process": "^6"
     },
     "autoload": {
         "psr-4": {

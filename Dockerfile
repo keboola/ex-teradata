@@ -5,7 +5,7 @@ ARG AWS_SESSION_TOKEN
 RUN /usr/bin/aws s3 cp s3://keboola-drivers/teradata/tdodbc1710-17.10.00.17-1.x86_64.deb /tmp/teradata/tdodbc.deb
 
 
-FROM php:7-cli
+FROM php:8-cli
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive

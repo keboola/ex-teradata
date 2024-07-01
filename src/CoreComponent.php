@@ -12,7 +12,7 @@ use Keboola\ExTeradata\Factories\CsvWriterFactory;
 
 class CoreComponent extends BaseComponent
 {
-    public function run(): void
+    protected function run(): void
     {
         /** @var Config $config */
         $config = $this->getConfig();
@@ -23,7 +23,7 @@ class CoreComponent extends BaseComponent
             $config->getHost(),
             $config->getPort(),
             $config->getUser(),
-            $config->getPassword()
+            $config->getPassword(),
         );
 
         $extractorHelper = new ExtractorHelper();
@@ -31,14 +31,19 @@ class CoreComponent extends BaseComponent
             $connection,
             new CsvWriterFactory(),
             $exceptionHandler,
-            $this->getLogger()
+            $this->getLogger(),
         );
 
-        $query = $config->getQuery() ?? $extractorHelper->getExportSql(
-            $config->getSchema(),
-            $config->getTableName(),
-            $config->getColumns()
-        );
+        $query = $config->getQuery();
+        if ($query === null) {
+            assert($config->getSchema() !== null);
+            assert($config->getTableName() !== null);
+            $query = $extractorHelper->getExportSql(
+                $config->getSchema(),
+                $config->getTableName(),
+                $config->getColumns(),
+            );
+        }
         $outputCsvFilePath = $this->getDataDir() . '/out/tables/' . $config->getOutputTable() . '.csv';
 
         $extractor->extractTable($query, $outputCsvFilePath);

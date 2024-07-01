@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata\Response;
 
-class Column implements \JsonSerializable
-{
-    /** @var string */
-    private $name;
+use JsonSerializable;
 
-    public function __construct(string $name)
+class Column implements JsonSerializable
+{
+    public function __construct(private string $name)
     {
-        $this->name = $name;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return array{name:string}
+     */
     public function jsonSerialize(): array
     {
         return [

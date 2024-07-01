@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Keboola\\\\ExTeradata\\\\Config\\\\CoreComponent\\\\Config\\:\\:getIncremental\\(\\) should return bool but returns mixed\\.$#"
+			count: 1
+			path: src/Config/CoreComponent/Config.php
