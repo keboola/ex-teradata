@@ -1,4 +1,4 @@
-FROM quay.io/keboola/aws-cli
+FROM amazon/aws-cli
 ARG AWS_SECRET_ACCESS_KEY
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SESSION_TOKEN
