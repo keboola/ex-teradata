@@ -75,6 +75,11 @@ class ExceptionHandler
                 'Logons are only enabled for user %s.',
                 [1]
             ),
+            new MessageTransformation(
+                '~\[Teradata\]\[ODBC Teradata Driver\]\[Teradata Database\]\(\d+\)\s*(.+?)\s*S1000.*$~',
+                'SQL failed: %s.',
+                [1]
+            ),
         ];
     }
 
