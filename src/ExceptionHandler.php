@@ -86,7 +86,7 @@ class ExceptionHandler
                 [1]
             ),
             new MessageTransformation(
-                '~\(\d+\)(.*)S1000~',
+                '~.*?\(-\d+\)(.*?)S1000~',
                 'SQL failed: %s.',
                 [1]
             ),
