@@ -17,7 +17,7 @@ class CoreComponent extends BaseComponent
         /** @var Config $config */
         $config = $this->getConfig();
 
-        $exceptionHandler = new ExceptionHandler();
+        $exceptionHandler = new ExceptionHandler($this->getLogger());
 
         $connection = (new ConnectionFactory())->create(
             $config->getHost(),

@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace Keboola\ExTeradata;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
 class ExceptionHandler
 {
+    /** @var LoggerInterface|null */
+    private $logger;
+
     /** @var MessageTransformation[] */
     private $messageTransformations = [];
 
-    public function __construct()
+    public function __construct(?LoggerInterface $logger = null)
     {
+        if ($logger === null) {
+            $logger = new NullLogger();
+        }
+        $this->logger = $logger;
         $this->messageTransformations = [
             new MessageTransformation(
                 '~Can\'t assign requested address 08S01~',
@@ -85,7 +95,20 @@ class ExceptionHandler
 
     public function createException(\Throwable $exception): \Throwable
     {
+        $this->logger->error(
+            $exception->getMessage()
+        );
+        var_export($exception->getMessage());
         foreach ($this->messageTransformations as $messageTransformation) {
+            preg_match(
+                $messageTransformation->getPattern(),
+                $exception->getMessage(),
+                $matches
+            );
+            var_export($matches);
+            $this->logger->error(
+                implode('|',$matches)
+            );
             if (preg_match(
                 $messageTransformation->getPattern(),
                 $exception->getMessage(),
