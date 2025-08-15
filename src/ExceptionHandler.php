@@ -76,7 +76,7 @@ class ExceptionHandler
                 [1]
             ),
             new MessageTransformation(
-                '~\[Teradata\]\[ODBC Teradata Driver\]\[Teradata Database\]\(\d+\)\s*(.+?)\s*S1000.*$~',
+                '~\(\d+\)(.*)S1000~',
                 'SQL failed: %s.',
                 [1]
             ),

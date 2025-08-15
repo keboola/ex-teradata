@@ -224,7 +224,21 @@ class ExceptionHandlerTest extends TestCase
 
         $this->assertInstanceOf(UserException::class, $exception);
         $this->assertEquals(
-            'SQL failed: Function \'TD_LEFT\' called with an invalid number or type of parameters.',
+            'SQL failed: Function \'TD_LEFT\' called with an invalid number or type of parameters .',
+            $exception->getMessage()
+        );
+    }
+
+    public function testExceptionHandlerS1000ThrowUserException2(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+        //@phpcs:ignore
+            new \ErrorException('Dibi\DriverException:[Teradata][ODBC Teradata Driver][Teradata Database](9881)Function \'TD_LEFT\' called with an invalid number or type of parameters S1000 ')
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'SQL failed: Function \'TD_LEFT\' called with an invalid number or type of parameters .',
             $exception->getMessage()
         );
     }
