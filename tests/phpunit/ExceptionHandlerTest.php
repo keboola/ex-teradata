@@ -188,6 +188,21 @@ class ExceptionHandlerTest extends TestCase
         );
     }
 
+    public function testExceptionHandlerLogonFailedHelpSession(): void
+    {
+        $exception = $this->exceptionHandler->createException(
+            new DriverException(
+                '[Teradata][ODBC Teradata Driver] (84) Logon failed due to Execute(HELP SESSION) failure. S1000'
+            )
+        );
+
+        $this->assertInstanceOf(UserException::class, $exception);
+        $this->assertEquals(
+            'Logon failed. Please check your credentials and server configuration.',
+            $exception->getMessage()
+        );
+    }
+
     public function testExceptionHandlerLogonsAreOnlyEnabledForUser(): void
     {
         $exception = $this->exceptionHandler->createException(
