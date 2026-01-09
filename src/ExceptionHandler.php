@@ -71,6 +71,10 @@ class ExceptionHandler
                 'Teradata Internal Error.'
             ),
             new MessageTransformation(
+                '~Logon failed due to Execute\(HELP SESSION\) failure~',
+                'Logon failed. Please check your credentials and server configuration.'
+            ),
+            new MessageTransformation(
                 '~Logons are only enabled for user (.+)\.~',
                 'Logons are only enabled for user %s.',
                 [1]
